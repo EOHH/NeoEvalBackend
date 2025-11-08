@@ -13,7 +13,6 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase(AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Verificar si ya existe un admin
             if (adminRepository.count() == 0) {
                 Admin superAdmin = new Admin();
                 superAdmin.setName("Super Administrador");
@@ -25,8 +24,11 @@ public class DataInitializer {
                 superAdmin.setCanManageContent(true);
                 superAdmin.setCanManageSystem(true);
 
+                // ✅ Asegurar que el admin esté aprobado desde el inicio
+                superAdmin.setApprovalStatus("APPROVED");
+
                 adminRepository.save(superAdmin);
-                System.out.println("✅ Super admin creado: super.admin@neoeval.edu / Admin123!");
+                System.out.println("✅ Super admin creado y APROBADO: super.admin@neoeval.edu / Admin123!");
             }
         };
     }
