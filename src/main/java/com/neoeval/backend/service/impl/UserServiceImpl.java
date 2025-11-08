@@ -1,4 +1,3 @@
-// Archivo: com/neoeval/backend/service/impl/UserServiceImpl.java
 package com.neoeval.backend.service.impl;
 
 import com.neoeval.backend.dto.request.UpdateUserRequest;
@@ -11,8 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,13 +46,11 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
-        // Esta llamada ahora devolverá un UserResponse completo
         return mapToUserResponse(user);
     }
 
     @Override
     public StudentResponse getStudentById(Long id) {
-        // ... (sin cambios) ...
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estudiante", "id", id));
         if (!"STUDENT".equalsIgnoreCase(student.getUserType())) {
@@ -64,7 +61,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ParentResponse getParentById(Long id) {
-        // ... (sin cambios) ...
         Parent parent = parentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Padre", "id", id));
         if (!"PARENT".equalsIgnoreCase(parent.getUserType())) {
@@ -75,7 +71,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<StudentResponse> getAllStudents() {
-        // ... (sin cambios) ...
         List<Student> students = studentRepository.findAll();
         return students.stream()
                 .map(this::mapToStudentResponse)
@@ -85,7 +80,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse updateUser(Long id, UpdateUserRequest updateRequest) {
-        // ... (sin cambios) ...
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
 
@@ -121,7 +115,7 @@ public class UserServiceImpl implements UserService {
                 }
                 break;
             case "TEACHER":
-                System.out.println("Los campos específicos de TEACHER en UpdateUserRequest (department, subjectTaught) deben ser manejados por TeacherService, si se necesita su persistencia en una entidad Teacher.");
+                System.out.println("Los campos específicos de TEACHER en UpdateUserRequest deben ser manejados por TeacherService.");
                 break;
         }
 
@@ -132,7 +126,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        // ... (sin cambios) ...
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
         userRepository.delete(user);
@@ -144,90 +137,102 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
 
-        // 1. Verificar si hay un cambio de estado necesario
         if (user.isActive() == active) {
-            // Si el estado ya es el deseado, no hacemos nada y devolvemos el usuario
             return mapToUserResponse(user);
         }
 
-        // 2. Aplicar el cambio de estado
         user.setActive(active);
-
-        // 3. Guardar y devolver la respuesta
         User updatedUser = userRepository.save(user);
         return mapToUserResponse(updatedUser);
     }
 
-    // --- Métodos de Mapeo (Helper Methods) ---
+    // ✅ NUEVOS MÉTODOS PARA APROBACIÓN
+    @Override
+    public List<UserResponse> getPendingUsers() {
+        List<User> pendingUsers = userRepository.findByApprovalStatus("PENDING");
+        return pendingUsers.stream()
+                .map(this::mapToUserResponse)
+                .collect(Collectors.toList());
+    }
 
-    // ✅✅✅ CORRECCIÓN PRINCIPAL AQUÍ ✅✅✅
+    @Override
+    @Transactional
+    public UserResponse approveUser(Long userId, Long adminId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if ("APPROVED".equals(user.getApprovalStatus())) {
+            throw new IllegalStateException("El usuario ya está aprobado");
+        }
+
+        user.setApprovalStatus("APPROVED");
+        user.setApprovedBy(adminId);
+        user.setApprovedAt(Instant.now());
+        user.setRejectionReason(null);
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse rejectUser(Long userId, Long adminId, String reason) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if ("REJECTED".equals(user.getApprovalStatus())) {
+            throw new IllegalStateException("El usuario ya está rechazado");
+        }
+
+        user.setApprovalStatus("REJECTED");
+        user.setApprovedBy(adminId);
+        user.setApprovedAt(Instant.now());
+        user.setRejectionReason(reason);
+        user.setActive(false);
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
+    }
+
+    // --- MÉTODOS DE MAPEO ---
     private UserResponse mapToUserResponse(User user) {
-        // 1. Crea la respuesta base como antes
-        UserResponse response = new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getUserType(),
-                user.getCreatedAt(), // Asumiendo que estos son Instant o Date
-                user.getLastLogin(),  // Asumiendo que estos son Instant o Date
-                user.isActive()
-        );
+        UserResponse response = new UserResponse(user);
 
-        // 2. Lógica para enriquecer la respuesta
+        // Si es PARENT, agregar el studentId
         if ("PARENT".equals(user.getUserType())) {
-            // Hacemos un cast seguro. (userRepository.findById devuelve un User,
-            // pero si es PARENT, debe ser una instancia de Parent)
             if (user instanceof Parent) {
                 Parent parent = (Parent) user;
                 if (parent.getStudent() != null) {
-                    // 3. Establece el studentId en el DTO
                     response.setStudentId(parent.getStudent().getId());
                 }
             } else {
-                // Si esto falla, puede que necesites cargar el Parent explícitamente
-                Parent parent = parentRepository.findById(user.getId())
-                        .orElse(null); // Opcional: Cargar si el 'user' no es la instancia correcta
+                Parent parent = parentRepository.findById(user.getId()).orElse(null);
                 if (parent != null && parent.getStudent() != null) {
                     response.setStudentId(parent.getStudent().getId());
                 }
             }
         }
 
-        // 4. Retorna la respuesta (ahora con el studentId si aplica)
         return response;
     }
 
     private StudentResponse mapToStudentResponse(Student student) {
-        // ... (sin cambios) ...
-        StudentResponse response = new StudentResponse(
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
-                student.getUserType(),
-                student.getCreatedAt(),
-                student.getLastLogin(),
-                student.isActive(),
-                student.getEducationalLevel(),
-                student.getBirthDate(),
-                null, null, null, null, null, null
-        );
+        StudentResponse response = new StudentResponse(student); // ✅ Constructor con User
+        response.setEducationalLevel(student.getEducationalLevel());
+        response.setBirthDate(student.getBirthDate());
+        // Agregar más campos si existen
         return response;
     }
 
     private ParentResponse mapToParentResponse(Parent parent) {
-        // ... (sin cambios) ...
-        // ✅ NOTA: Este método SÍ debe incluir el studentId
-        ParentResponse response = new ParentResponse(
-                parent.getId(),
-                parent.getName(),
-                parent.getEmail(),
-                parent.getUserType(),
-                parent.getCreatedAt(),
-                parent.getLastLogin(),
-                parent.isActive(),
-                parent.getRelationship(),
-                null, null, null
-        );
+        ParentResponse response = new ParentResponse(parent); // ✅ Constructor con User
+        response.setRelationship(parent.getRelationship());
+
+        if (parent.getStudent() != null) {
+            response.setStudentId(parent.getStudent().getId());
+            response.setStudentName(parent.getStudent().getName());
+            response.setStudentEducationalLevel(parent.getStudent().getEducationalLevel());
+        }
 
         return response;
     }

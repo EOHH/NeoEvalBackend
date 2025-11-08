@@ -189,7 +189,7 @@ public class ClassGroupServiceImpl implements ClassGroupService {
         response.setName(classGroup.getName());
         response.setDescription(classGroup.getDescription());
 
-        // ✅ CORRECCIÓN APLICADA: La entidad ClassGroup ahora devuelve Instant, se asigna directamente.
+        // ✅ Asignar createdAt (Instant)
         if (classGroup.getCreatedAt() != null) {
             response.setCreatedAt(classGroup.getCreatedAt());
         }
@@ -206,25 +206,33 @@ public class ClassGroupServiceImpl implements ClassGroupService {
             response.setTeacherName("N/A");
         }
 
+        // ✅ CORRECCIÓN CLAVE: Usar el nuevo constructor con Student (User)
         if (classGroup.getStudents() != null && !classGroup.getStudents().isEmpty()) {
             List<StudentResponse> studentResponses = classGroup.getStudents().stream()
-                    .map(student -> new StudentResponse(
-                            student.getId(),
-                            student.getName(),
-                            student.getEmail(),
-                            student.getUserType(),
-                            student.getCreatedAt(),
-                            student.getLastLogin(),
-                            student.isActive(),
-                            student.getEducationalLevel(),
-                            student.getBirthDate(),
-                            student.getTotalPoints(),
-                            student.getGamificationLevel(),
-                            student.getParent() != null ? student.getParent().getId() : null,
-                            student.getParent() != null ? student.getParent().getName() : null,
-                            0, // completedExamsCount
-                            0  // certificatesEarnedCount
-                    )).collect(Collectors.toList());
+                    .map(student -> {
+                        // Crear StudentResponse con el constructor automático
+                        StudentResponse studentResp = new StudentResponse(student);
+
+                        // Agregar campos específicos de Student
+                        studentResp.setEducationalLevel(student.getEducationalLevel());
+                        studentResp.setBirthDate(student.getBirthDate());
+                        studentResp.setTotalPoints(student.getTotalPoints());
+                        studentResp.setGamificationLevel(student.getGamificationLevel());
+
+                        // Agregar información del padre si existe
+                        if (student.getParent() != null) {
+                            studentResp.setParentId(student.getParent().getId());
+                            studentResp.setParentName(student.getParent().getName());
+                        }
+
+                        // Valores por defecto para exámenes y certificados
+                        studentResp.setExamCompleted(0);
+                        studentResp.setCertificatesEarned(0);
+
+                        return studentResp;
+                    })
+                    .collect(Collectors.toList());
+
             response.setStudents(studentResponses);
             response.setStudentCount(studentResponses.size());
         } else {

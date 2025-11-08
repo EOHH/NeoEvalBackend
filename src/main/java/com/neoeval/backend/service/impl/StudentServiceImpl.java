@@ -140,23 +140,17 @@ public class StudentServiceImpl implements StudentService {
     // --- 4. MÉTODO DE MAPEO (Sin cambios) ---
 
     private StudentResponse mapToStudentResponse(Student student) {
-        StudentResponse response = new StudentResponse(
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
-                student.getUserType(),
-                student.getCreatedAt(),
-                student.getLastLogin(),
-                student.isActive(),
-                student.getEducationalLevel(),
-                student.getBirthDate(),
-                student.getTotalPoints(),
-                student.getGamificationLevel(),
-                student.getParent() != null ? student.getParent().getId() : null,
-                null,
-                null,
-                null
-        );
+        StudentResponse response = new StudentResponse(student); // ✅ Constructor con User
+
+        response.setEducationalLevel(student.getEducationalLevel());
+        response.setBirthDate(student.getBirthDate());
+        response.setTotalPoints(student.getTotalPoints());
+        response.setGamificationLevel(student.getGamificationLevel());
+
+        if (student.getParent() != null) {
+            response.setParentId(student.getParent().getId());
+        }
+
         return response;
     }
 }

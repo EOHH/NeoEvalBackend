@@ -109,22 +109,16 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     private TeacherResponse mapToTeacherResponse(Teacher teacher) {
+        TeacherResponse response = new TeacherResponse(teacher); // ✅ Constructor con User
+
         Long groupsCount = classGroupRepository.countByTeacher_Id(teacher.getId());
         Long examsCount = examRepository.countByTeacher_Id(teacher.getId());
         Long studentsCount = studentRepository.countStudentsByGroupTeacherId(teacher.getId());
 
-        TeacherResponse response = new TeacherResponse(
-                teacher.getId(),
-                teacher.getName(),
-                teacher.getEmail(),
-                teacher.getUserType(),
-                teacher.getCreatedAt(),
-                teacher.getLastLogin(),
-                teacher.isActive(),
-                groupsCount != null ? groupsCount.intValue() : 0,
-                examsCount != null ? examsCount.intValue() : 0,
-                studentsCount != null ? studentsCount.intValue() : 0
-        );
+        response.setGroupsCreated(groupsCount != null ? groupsCount.intValue() : 0);
+        response.setExamsCreated(examsCount != null ? examsCount.intValue() : 0);
+        response.setStudentsTaught(studentsCount != null ? studentsCount.intValue() : 0);
+
         return response;
     }
 

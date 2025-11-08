@@ -127,18 +127,8 @@ public class ParentServiceImpl implements ParentService {
     }
 
     private ParentResponse mapToParentResponse(Parent parent) {
-        // Uso de setters para mayor claridad y flexibilidad al inicializar
-        ParentResponse response = new ParentResponse();
-        response.setId(parent.getId());
-        response.setName(parent.getName());
-        response.setEmail(parent.getEmail());
-        response.setUserType(parent.getUserType());
+        ParentResponse response = new ParentResponse(parent); // ✅ Constructor con User
 
-        // Estos métodos ahora manejan Instant, compatible con ParentResponse.
-        response.setCreatedAt(parent.getCreatedAt());
-        response.setLastLogin(parent.getLastLogin());
-
-        response.setActive(parent.isActive());
         response.setRelationship(parent.getRelationship());
 
         if (parent.getStudent() != null) {
@@ -146,6 +136,7 @@ public class ParentServiceImpl implements ParentService {
             response.setStudentName(parent.getStudent().getName());
             response.setStudentEducationalLevel(parent.getStudent().getEducationalLevel());
         }
+
         return response;
     }
 }

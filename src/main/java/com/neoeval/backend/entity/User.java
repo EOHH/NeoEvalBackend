@@ -25,7 +25,6 @@ public class User {
     @Column(name = "user_type", nullable = false, length = 20)
     private String userType; // TEACHER, STUDENT, PARENT, ADMIN
 
-    // ✅ Instant siempre guarda en UTC (sin zona horaria local)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -34,6 +33,19 @@ public class User {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    // ✅ NUEVOS CAMPOS DE APROBACIÓN
+    @Column(name = "approval_status", nullable = false, length = 20)
+    private String approvalStatus = "PENDING"; // PENDING, APPROVED, REJECTED
+
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
+    @Column(name = "approved_at")
+    private Instant approvedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> sentMessages = new HashSet<>();
@@ -44,9 +56,10 @@ public class User {
     @ManyToMany(mappedBy = "teachers")
     private List<Subject> subjects = new ArrayList<>();
 
-    // 🔹 Constructores
+    // Constructores
     public User() {
-        this.createdAt = Instant.now(); // Guarda hora exacta en UTC
+        this.createdAt = Instant.now();
+        this.approvalStatus = "PENDING"; // ✅ Por defecto PENDING
     }
 
     public User(String name, String email, String password, String userType) {
@@ -57,7 +70,7 @@ public class User {
         this.userType = userType;
     }
 
-    // 🔹 Getters y Setters
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -146,7 +159,40 @@ public class User {
         this.subjects = subjects;
     }
 
-    // 🔹 Métodos helper
+    // ✅ NUEVOS GETTERS Y SETTERS
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public Long getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Long approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public Instant getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(Instant approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+
+    // Métodos helper
     public void addSentMessage(Message message) {
         sentMessages.add(message);
         message.setSender(this);

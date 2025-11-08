@@ -10,6 +10,7 @@ public class AuthResponse {
     private String name;
     private String email;
     private Long studentId;
+    private String approvalStatus;
 
     // Constructors
     public AuthResponse() {
@@ -87,5 +88,13 @@ public class AuthResponse {
 
     public void setStudentId(Long studentId) {
         this.studentId = studentId;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 }

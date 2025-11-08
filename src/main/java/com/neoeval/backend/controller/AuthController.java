@@ -39,8 +39,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             AuthResponse authResponse = authService.registerUser(registerRequest);
+
+            // ✅ Verificar si el usuario está pendiente de aprobación
+            if ("PENDING".equals(authResponse.getApprovalStatus())) {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .body(new ApiResponse(
+                                true,
+                                "Registro exitoso. Tu cuenta está pendiente de aprobación por un administrador. Te notificaremos cuando sea revisada.",
+                                authResponse
+                        ));
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Usuario registrado exitosamente", authResponse));
+
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, e.getMessage(), null));

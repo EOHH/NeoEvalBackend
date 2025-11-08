@@ -1,27 +1,18 @@
 package com.neoeval.backend.dto.response;
 
-import java.time.Instant; // Importamos Instant para el constructor de la clase padre
+import com.neoeval.backend.entity.User;
 
 public class TeacherResponse extends UserResponse {
     private Integer groupsCreated;
     private Integer examsCreated;
     private Integer studentsTaught;
 
-    // Constructor vacío
-    public TeacherResponse() {
-        super();
+    // ✅ Constructor que recibe User (llama al constructor del padre)
+    public TeacherResponse(User user) {
+        super(user);
     }
 
-    // Constructor completo para facilitar el mapeo
-    public TeacherResponse(Long id, String name, String email, String userType, Instant createdAt, Instant lastLogin, boolean active, Integer groupsCreated, Integer examsCreated, Integer studentsTaught) {
-        // ✅ Llama al constructor de la clase padre (UserResponse) usando Instant
-        super(id, name, email, userType, createdAt, lastLogin, active);
-        this.groupsCreated = groupsCreated;
-        this.examsCreated = examsCreated;
-        this.studentsTaught = studentsTaught;
-    }
-
-    // Getters y Setters para los campos específicos de Teacher
+    // Getters y Setters
     public Integer getGroupsCreated() {
         return groupsCreated;
     }

@@ -39,7 +39,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
-    // ... (El constructor no cambia) ...
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
@@ -59,7 +58,29 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse authenticateUser(LoginRequest loginRequest) {
+        // ✅ PASO 1: Buscar usuario ANTES de autenticar para validar aprobación
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new AuthenticationException("Credenciales inválidas"));
+
+        // ✅ PASO 2: VALIDAR ESTADO DE APROBACIÓN
+        if (!"APPROVED".equals(user.getApprovalStatus())) {
+            if ("PENDING".equals(user.getApprovalStatus())) {
+                throw new AuthenticationException(
+                        "Tu cuenta está pendiente de aprobación. Un administrador debe revisar tu solicitud antes de que puedas iniciar sesión."
+                );
+            } else if ("REJECTED".equals(user.getApprovalStatus())) {
+                String reason = user.getRejectionReason() != null
+                        ? " Razón: " + user.getRejectionReason()
+                        : "";
+                throw new AuthenticationException(
+                        "Tu cuenta ha sido rechazada." + reason
+                );
+            }
+        }
+
+        // ✅ PASO 3: Autenticar (solo si está APPROVED)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
@@ -68,16 +89,27 @@ public class AuthServiceImpl implements AuthService {
         );
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new AuthenticationException("Usuario no encontrado después de autenticación exitosa"));
 
+        // Actualizar último login
         user.setLastLogin(Instant.now());
         userRepository.save(user);
 
+        // Generar token
         String jwt = tokenProvider.generateToken(userPrincipal);
 
-        AuthResponse authResponse = new AuthResponse(jwt, user.getId(), user.getUserType(), user.getName(), user.getEmail());
+        // Crear respuesta
+        AuthResponse authResponse = new AuthResponse(
+                jwt,
+                user.getId(),
+                user.getUserType(),
+                user.getName(),
+                user.getEmail()
+        );
 
+        // ✅ AGREGAR approval_status a la respuesta
+        authResponse.setApprovalStatus(user.getApprovalStatus());
+
+        // Si es PARENT, agregar studentId
         if ("PARENT".equals(user.getUserType())) {
             Parent parent = parentRepository.findById(user.getId())
                     .orElseThrow(() -> new AuthenticationException("Datos de Padre no encontrados para el usuario: " + user.getId()));
@@ -93,13 +125,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse registerUser(RegisterRequest registerRequest) {
-        // ... (Toda la lógica del switch (case "STUDENT", "PARENT", "TEACHER") no cambia) ...
+        // Validar que el email no exista
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new AuthenticationException("El correo ya está registrado");
         }
 
         User user;
-        switch (registerRequest.getUserType().toUpperCase()) {
+        String userType = registerRequest.getUserType().toUpperCase();
+
+        // ✅ Crear usuario según el tipo (con approval_status = PENDING por defecto)
+        switch (userType) {
             case "STUDENT":
                 Student student = new Student();
                 student.setName(registerRequest.getName());
@@ -108,8 +143,10 @@ public class AuthServiceImpl implements AuthService {
                 student.setUserType("STUDENT");
                 student.setEducationalLevel(registerRequest.getEducationalLevel());
                 student.setBirthDate(registerRequest.getBirthDate());
+                // approval_status se establece en "PENDING" automáticamente por el constructor de User
                 user = studentRepository.save(student);
                 break;
+
             case "PARENT":
                 Parent parent = new Parent();
                 parent.setName(registerRequest.getName());
@@ -126,6 +163,7 @@ public class AuthServiceImpl implements AuthService {
 
                 user = parentRepository.save(parent);
                 break;
+
             case "TEACHER":
                 Teacher teacher = new Teacher();
                 teacher.setName(registerRequest.getName());
@@ -136,15 +174,25 @@ public class AuthServiceImpl implements AuthService {
                 teacher.setExpertiseArea(registerRequest.getExpertiseArea());
                 user = teacherRepository.save(teacher);
                 break;
+
             default:
-                throw new IllegalArgumentException("Tipo de usuario inválido: " + registerRequest.getUserType());
+                throw new IllegalArgumentException("Tipo de usuario inválido: " + userType);
         }
 
-        UserPrincipal userPrincipal = UserPrincipal.create(user);
-        String jwt = tokenProvider.generateToken(userPrincipal);
+        // ✅ NO GENERAR TOKEN - El usuario debe esperar aprobación
+        // Retornar respuesta indicando que está pendiente
+        AuthResponse authResponse = new AuthResponse(
+                null, // Sin token
+                user.getId(),
+                user.getUserType(),
+                user.getName(),
+                user.getEmail()
+        );
 
-        AuthResponse authResponse = new AuthResponse(jwt, user.getId(), user.getUserType(), user.getName(), user.getEmail());
+        // ✅ Indicar que está pendiente de aprobación
+        authResponse.setApprovalStatus("PENDING");
 
+        // Si es PARENT y tiene estudiante vinculado, agregarlo
         if ("PARENT".equals(user.getUserType()) && user instanceof Parent) {
             Parent registeredParent = (Parent) user;
             if (registeredParent.getStudent() != null) {
@@ -156,18 +204,34 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse refreshToken(String refreshToken) {
         if (!tokenProvider.validateToken(refreshToken)) {
             throw new AuthenticationException("Token de refresco inválido");
         }
+
         Long userId = tokenProvider.getUserIdFromJWT(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthenticationException("Usuario no encontrado para refrescar token"));
 
+        // ✅ VALIDAR ESTADO DE APROBACIÓN también en refresh
+        if (!"APPROVED".equals(user.getApprovalStatus())) {
+            throw new AuthenticationException("Tu cuenta ya no está aprobada. Contacta al administrador.");
+        }
+
         UserPrincipal userPrincipal = UserPrincipal.create(user);
         String newToken = tokenProvider.generateToken(userPrincipal);
 
-        AuthResponse authResponse = new AuthResponse(newToken, user.getId(), user.getUserType(), user.getName(), user.getEmail());
+        AuthResponse authResponse = new AuthResponse(
+                newToken,
+                user.getId(),
+                user.getUserType(),
+                user.getName(),
+                user.getEmail()
+        );
+
+        // ✅ Agregar approval_status
+        authResponse.setApprovalStatus(user.getApprovalStatus());
 
         if ("PARENT".equals(user.getUserType())) {
             Parent parent = parentRepository.findById(user.getId())
@@ -184,5 +248,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logoutUser(String token) {
         logger.info("El token JWT {} ha sido invalidado (implementación de logout pendiente).", token);
+        // Aquí puedes implementar una blacklist de tokens si lo necesitas
     }
 }

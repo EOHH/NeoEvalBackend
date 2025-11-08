@@ -1,30 +1,40 @@
 package com.neoeval.backend.dto.response;
 
-import java.time.Instant;
-import java.util.Date;
+import com.neoeval.backend.entity.User;
 
 public class UserResponse {
     private Long id;
     private String name;
     private String email;
-    private String userType; // TEACHER, STUDENT, PARENT
-    private Instant createdAt;
-    private Instant lastLogin;
+    private String userType;
     private boolean active;
+    private String createdAt;
+    private String lastLogin; // ✅ Agregado
+
+    // ✅ CAMPOS DE APROBACIÓN
+    private String approvalStatus;
+    private Long approvedBy;
+    private String approvedAt;
+    private String rejectionReason;
+
+    // ✅ CAMPO PARA PADRES
     private Long studentId;
 
-    // Constructor vacío (necesario para la deserialización de frameworks como Spring)
-    public UserResponse() {}
+    // Constructor que recibe User
+    public UserResponse(User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.userType = user.getUserType();
+        this.active = user.isActive();
+        this.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
+        this.lastLogin = user.getLastLogin() != null ? user.getLastLogin().toString() : null;
 
-    // Constructor completo para facilitar el mapeo desde la entidad User
-    public UserResponse(Long id, String name, String email, String userType, Instant createdAt, Instant lastLogin, boolean active) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.userType = userType;
-        this.createdAt = createdAt;
-        this.lastLogin = lastLogin;
-        this.active = active;
+        // ✅ MAPEO DE CAMPOS DE APROBACIÓN
+        this.approvalStatus = user.getApprovalStatus();
+        this.approvedBy = user.getApprovedBy();
+        this.approvedAt = user.getApprovedAt() != null ? user.getApprovedAt().toString() : null;
+        this.rejectionReason = user.getRejectionReason();
     }
 
     // Getters y Setters
@@ -60,22 +70,6 @@ public class UserResponse {
         this.userType = userType;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Instant lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -84,6 +78,56 @@ public class UserResponse {
         this.active = active;
     }
 
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(String lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    // ✅ GETTERS Y SETTERS DE APROBACIÓN
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public Long getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Long approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public String getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(String approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+
+    // ✅ GETTER Y SETTER DE STUDENTID
     public Long getStudentId() {
         return studentId;
     }
