@@ -35,21 +35,25 @@ public class SecurityConfig {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    // === PASSWORD ENCODER ===
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // === AUTHENTICATION MANAGER ===
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    // === JWT FILTER ===
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService);
     }
 
+    // === SECURITY FILTER CHAIN ===
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -67,27 +71,38 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())); // Enlazamos el CORS
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // === CORS CONFIGURATION ===
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("*"));
+        // ✅ Lista explícita de orígenes permitidos
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173", // Frontend React (Vite dev server)
+                "https://neoeval.web.app", // Ejemplo: dominio de producción web si usas Firebase o similar
+                "https://wonderful-victory-production-af78.up.railway.app", // Backend deployado
+                "http://localhost:8080", // Para Postman o tests locales
+                "http://localhost" // Algunos entornos Flutter web usan este
+        ));
 
         config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        config.setExposedHeaders(List.of("Authorization"));
+
+        // ✅ Muy importante: permitir que la solicitud preflight no se redirija
+        config.setMaxAge(3600L); // Cachea la respuesta preflight por 1 hora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
         return source;
     }
-
 }
