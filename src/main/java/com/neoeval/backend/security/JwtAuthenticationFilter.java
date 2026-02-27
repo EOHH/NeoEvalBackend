@@ -2,6 +2,7 @@ package com.neoeval.backend.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie; // 🔹 Importante
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -58,11 +59,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // 🔥 LA LÓGICA DE AUTENTICACIÓN DUAL
     private String getJwtFromRequest(HttpServletRequest request) {
+        // 1. Intentar buscar el token en las Cookies (Prioridad para Neo Eval Web)
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (SecurityConstants.COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        // 2. Si no hay cookie, buscar en el Header 'Authorization' (Para la App Móvil actual)
         String bearerToken = request.getHeader(SecurityConstants.HEADER_STRING);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(SecurityConstants.TOKEN_PREFIX)) {
             return bearerToken.substring(SecurityConstants.TOKEN_PREFIX.length());
         }
+
         return null;
     }
 }
