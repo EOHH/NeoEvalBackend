@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.Instant; // Se mantiene la importación de Instant
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,7 +52,6 @@ public class ExamServiceImpl implements ExamService {
 
     // --- Mapeadores Auxiliares ---
 
-    // 🚀 MAPPER CORREGIDO: Conversión de LocalDateTime a Instant
     private ClassGroupResponse mapToClassGroupResponse(ClassGroup classGroup) {
         if (classGroup == null) return null;
         ClassGroupResponse response = new ClassGroupResponse();
@@ -62,9 +61,7 @@ public class ExamServiceImpl implements ExamService {
         response.setEducationalLevel(classGroup.getEducationalLevel());
         response.setDescription(classGroup.getDescription());
 
-        // 🚨 CORRECCIÓN AQUÍ: Convertir LocalDateTime (de la entidad) a Instant (del DTO)
         if (classGroup.getCreatedAt() != null) {
-            // Asumimos que classGroup.getCreatedAt() devuelve LocalDateTime. Lo convertimos a Instant en UTC.
             response.setCreatedAt(classGroup.getCreatedAt().atZone(ZoneOffset.UTC).toInstant());
         }
 
@@ -79,7 +76,6 @@ public class ExamServiceImpl implements ExamService {
         return response;
     }
 
-
     private ExamResponse mapToExamResponse(Exam exam) {
         ZoneId zoneId = ZoneOffset.UTC;
         ExamResponse response = new ExamResponse();
@@ -89,7 +85,6 @@ public class ExamServiceImpl implements ExamService {
         response.setDescription(exam.getDescription());
         response.setExamType(exam.getExamType());
 
-        // Ya tenías esta conversión de Instant (de Exam) a LocalDateTime (para el DTO)
         if (exam.getOpeningDate() != null) {
             response.setOpeningDate(exam.getOpeningDate().atZone(zoneId).toLocalDateTime());
         }
@@ -109,7 +104,6 @@ public class ExamServiceImpl implements ExamService {
             response.setTeacherName("N/A");
         }
 
-        // Mapear ClassGroup como un OBJETO
         if (exam.getClassGroup() != null) {
             response.setClassGroup(mapToClassGroupResponse(exam.getClassGroup()));
         }
@@ -124,11 +118,18 @@ public class ExamServiceImpl implements ExamService {
 
         response.setIsCompleted(false);
 
+        // 🚀 CORRECCIÓN: Contar las preguntas y asignarlas al DTO
+        if (exam.getQuestions() != null) {
+            response.setQuestionCount(exam.getQuestions().size());
+        } else {
+            response.setQuestionCount(0);
+        }
+
         return response;
     }
 
     // ----------------------------------------------------------------------------------
-    // RESTO DE MÉTODOS DEL SERVICIO (se mantienen igual)
+    // RESTO DE MÉTODOS DEL SERVICIO
     // ----------------------------------------------------------------------------------
 
     @Override
@@ -310,15 +311,12 @@ public class ExamServiceImpl implements ExamService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<ExamSummaryResponse> getExamSummariesByTeacher(Long teacherId) {
-        // 1. (Opcional) Verificar que el profesor existe
         teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor", "id", teacherId));
 
-        // 2. Llamar al método de agregación optimizada del repositorio
         List<ExamSummaryResponse> summaries = studentResultRepository.findExamSummariesByTeacherId(teacherId);
 
         return summaries;
