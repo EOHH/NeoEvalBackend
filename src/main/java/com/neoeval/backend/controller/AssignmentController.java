@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -31,15 +34,19 @@ public class AssignmentController {
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasRole('TEACHER') or (hasRole('STUDENT') and #studentId == authentication.principal.id)")
-    public ResponseEntity<List<AssignmentResponse>> getAssignmentsByStudent(@PathVariable Long studentId) {
-        List<AssignmentResponse> responses = assignmentService.getAssignmentsByStudentId(studentId); // Coincide con el servicio
+    public ResponseEntity<Page<AssignmentResponse>> getAssignmentsByStudent(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<AssignmentResponse> responses = assignmentService.getAssignmentsByStudentId(studentId, pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/exam/{examId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public ResponseEntity<List<AssignmentResponse>> getAssignmentsByExam(@PathVariable Long examId) {
-        List<AssignmentResponse> responses = assignmentService.getAssignmentsByExamId(examId); // Coincide con el servicio
+    public ResponseEntity<Page<AssignmentResponse>> getAssignmentsByExam(
+            @PathVariable Long examId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<AssignmentResponse> responses = assignmentService.getAssignmentsByExamId(examId, pageable);
         return ResponseEntity.ok(responses);
     }
 

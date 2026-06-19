@@ -2,10 +2,11 @@ package com.neoeval.backend.service;
 
 import com.neoeval.backend.dto.request.UpdateUserRequest;
 import com.neoeval.backend.dto.response.*;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
-    List<UserResponse> getAllUsers();
+    Page<UserResponse> getAllUsers(Pageable pageable);
 
     UserResponse getUserById(Long id);
 
@@ -13,7 +14,7 @@ public interface UserService {
 
     ParentResponse getParentById(Long id);
 
-    List<StudentResponse> getAllStudents();
+    Page<StudentResponse> getAllStudents(Pageable pageable);
 
     UserResponse updateUser(Long id, UpdateUserRequest updateRequest);
 
@@ -22,7 +23,7 @@ public interface UserService {
     UserResponse toggleUserStatus(Long id, boolean active);
 
     // ✅ NUEVOS MÉTODOS PARA APROBACIÓN
-    List<UserResponse> getPendingUsers();
+    Page<UserResponse> getPendingUsers(Pageable pageable);
 
     UserResponse approveUser(Long userId, Long adminId);
 

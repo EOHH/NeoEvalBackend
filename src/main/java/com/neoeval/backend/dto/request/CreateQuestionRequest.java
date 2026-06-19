@@ -49,6 +49,8 @@ public class CreateQuestionRequest {
     @Size(max = 2000, message = "Explanation cannot exceed 2000 characters")
     private String explanation;
 
+    private String imageId;
+
     // Consider if a question can be created independently without being immediately associated with an exam.
     // If it MUST be associated with an exam upon creation, then add @NotNull(message = "Exam ID is required")
     // private Long examId;
@@ -108,5 +110,13 @@ public class CreateQuestionRequest {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
     }
 }

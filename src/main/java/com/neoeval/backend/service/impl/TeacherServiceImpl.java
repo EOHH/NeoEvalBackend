@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.ZoneOffset;
 import java.time.ZoneId;
 import java.time.Instant;
@@ -51,34 +53,28 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public List<TeacherResponse> getAllTeachers() {
-        List<Teacher> teachers = teacherRepository.findAll();
-        return teachers.stream()
-                .map(this::mapToTeacherResponse)
-                .collect(Collectors.toList());
+    public Page<TeacherResponse> getAllTeachers(Pageable pageable) {
+        Page<Teacher> teachers = teacherRepository.findAll(pageable);
+        return teachers.map(this::mapToTeacherResponse);
     }
 
     @Override
-    public List<ClassGroupResponse> getGroupsByTeacher(Long teacherId) {
+    public Page<ClassGroupResponse> getGroupsByTeacher(Long teacherId, Pageable pageable) {
         teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor", "id", teacherId));
 
-        List<ClassGroup> classGroups = classGroupRepository.findByTeacher_Id(teacherId);
+        Page<ClassGroup> classGroups = classGroupRepository.findByTeacher_Id(teacherId, pageable);
         // Usamos mapToGroupResponse, que se corrige a continuación
-        return classGroups.stream()
-                .map(this::mapToGroupResponse)
-                .collect(Collectors.toList());
+        return classGroups.map(this::mapToGroupResponse);
     }
 
     @Override
-    public List<ExamResponse> getExamsByTeacher(Long teacherId) {
+    public Page<ExamResponse> getExamsByTeacher(Long teacherId, Pageable pageable) {
         teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor", "id", teacherId));
 
-        List<Exam> exams = examRepository.findByTeacher_Id(teacherId);
-        return exams.stream()
-                .map(this::mapToExamResponse)
-                .collect(Collectors.toList());
+        Page<Exam> exams = examRepository.findByTeacher_Id(teacherId, pageable);
+        return exams.map(this::mapToExamResponse);
     }
 
     // --- Métodos de Mapeo (Helper Methods) para TeacherServiceImpl ---

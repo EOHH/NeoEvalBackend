@@ -10,14 +10,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class DataInitializer {
 
+    @org.springframework.beans.factory.annotation.Value("${app.admin.default-email}")
+    private String adminEmail;
+
+    @org.springframework.beans.factory.annotation.Value("${app.admin.default-password}")
+    private String adminPassword;
+
     @Bean
     CommandLineRunner initDatabase(AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             if (adminRepository.count() == 0) {
                 Admin superAdmin = new Admin();
                 superAdmin.setName("Super Administrador");
-                superAdmin.setEmail("super.admin@neoeval.edu");
-                superAdmin.setPassword(passwordEncoder.encode("Admin123!"));
+                superAdmin.setEmail(adminEmail);
+                superAdmin.setPassword(passwordEncoder.encode(adminPassword));
                 superAdmin.setAdminLevel("SUPER_ADMIN");
                 superAdmin.setDepartment("Sistema");
                 superAdmin.setCanManageUsers(true);
@@ -26,9 +32,12 @@ public class DataInitializer {
 
                 // ✅ Asegurar que el admin esté aprobado desde el inicio
                 superAdmin.setApprovalStatus("APPROVED");
+                
+                // ✅ Administrador verificado por defecto
+                superAdmin.setEmailVerified(true);
 
                 adminRepository.save(superAdmin);
-                System.out.println("✅ Super admin creado y APROBADO: super.admin@neoeval.edu / Admin123!");
+                System.out.println("✅ Super admin creado y APROBADO: " + adminEmail);
             }
         };
     }

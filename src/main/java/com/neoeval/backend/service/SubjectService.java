@@ -2,17 +2,18 @@ package com.neoeval.backend.service;
 
 import com.neoeval.backend.dto.request.CreateSubjectRequest;
 import com.neoeval.backend.dto.response.SubjectResponse;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface SubjectService {
-    List<SubjectResponse> getAllSubjects();
+    Page<SubjectResponse> getAllSubjects(Pageable pageable);
     SubjectResponse getSubjectById(Long id);
     SubjectResponse createSubject(CreateSubjectRequest request);
     SubjectResponse updateSubject(Long id, CreateSubjectRequest request);
     void deleteSubject(Long id);
-    List<SubjectResponse> getSubjectsByTeacher(Long teacherId);
-    List<SubjectResponse> getSubjectsByStudent(Long studentId);
-    List<SubjectResponse> searchSubjects(String query);
+    Page<SubjectResponse> getSubjectsByTeacher(Long teacherId, Pageable pageable);
+    Page<SubjectResponse> getSubjectsByStudent(Long studentId, Pageable pageable);
+    Page<SubjectResponse> searchSubjects(String query, Pageable pageable);
     SubjectResponse assignTeacherToSubject(Long subjectId, Long teacherId);
     void removeTeacherFromSubject(Long subjectId, Long teacherId);
 }

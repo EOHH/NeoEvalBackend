@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 // Importaciones necesarias para la conversión de fechas
 import java.time.ZoneOffset;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ClassGroupServiceImpl implements ClassGroupService {
@@ -55,6 +57,7 @@ public class ClassGroupServiceImpl implements ClassGroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ClassGroupResponse getGroupById(Long id) {
         ClassGroup classGroup = classGroupRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Grupo", "id", id));
@@ -62,21 +65,20 @@ public class ClassGroupServiceImpl implements ClassGroupService {
     }
 
     @Override
-    public List<ClassGroupResponse> getAllGroups() {
-        return classGroupRepository.findAll().stream()
-                .map(this::mapToGroupResponse)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<ClassGroupResponse> getAllGroups(Pageable pageable) {
+        return classGroupRepository.findAll(pageable)
+                .map(this::mapToGroupResponse);
     }
 
     @Override
-    public List<ClassGroupResponse> getGroupsByTeacherId(Long teacherId) {
+    @Transactional(readOnly = true)
+    public Page<ClassGroupResponse> getGroupsByTeacherId(Long teacherId, Pageable pageable) {
         teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor", "id", teacherId));
 
-        List<ClassGroup> classGroups = classGroupRepository.findByTeacher_Id(teacherId);
-        return classGroups.stream()
-                .map(this::mapToGroupResponse)
-                .collect(Collectors.toList());
+        Page<ClassGroup> classGroups = classGroupRepository.findByTeacher_Id(teacherId, pageable);
+        return classGroups.map(this::mapToGroupResponse);
     }
 
     @Override

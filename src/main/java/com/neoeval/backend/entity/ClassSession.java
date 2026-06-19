@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "class_sessions")
@@ -32,6 +33,7 @@ public class ClassSession {
 
     // 🔗 Relación 1:M con MaterialResource (Los archivos/enlaces adjuntos)
     @OneToMany(mappedBy = "classSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<MaterialResource> resources = new ArrayList<>();
 
     // Constructores

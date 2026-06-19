@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -63,8 +66,10 @@ public class CourseMaterialController {
     /** GET /api/materials/modules/teacher/{teacherId} - Obtiene todos los módulos de un profesor */
     @GetMapping("/modules/teacher/{teacherId}")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity<List<CourseModuleResponse>> getModulesByTeacher(@PathVariable Long teacherId) {
-        List<CourseModuleResponse> response = courseMaterialService.getModulesByTeacher(teacherId);
+    public ResponseEntity<Page<CourseModuleResponse>> getModulesByTeacher(
+            @PathVariable Long teacherId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<CourseModuleResponse> response = courseMaterialService.getModulesByTeacher(teacherId, pageable);
         return ResponseEntity.ok(response);
     }
 
@@ -72,14 +77,16 @@ public class CourseMaterialController {
     /** GET /api/materials/modules/student/{studentId} - Obtiene módulos por ID de estudiante */
     @GetMapping("/modules/student/{studentId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
-    public ResponseEntity<List<CourseModuleResponse>> getModulesForStudent(@PathVariable Long studentId) {
+    public ResponseEntity<Page<CourseModuleResponse>> getModulesForStudent(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
 
         // ⚠️ NOTA DE SEGURIDAD: En un entorno de producción, es una mala práctica
         // exponer el ID como PathVariable. Deberías obtener el ID del estudiante
         // desde el token de autenticación (Authentication principal) para
         // asegurar que solo pueda acceder a sus propios módulos.
 
-        List<CourseModuleResponse> modules = courseMaterialService.getModulesForStudent(studentId);
+        Page<CourseModuleResponse> modules = courseMaterialService.getModulesForStudent(studentId, pageable);
 
         return ResponseEntity.ok(modules);
     }

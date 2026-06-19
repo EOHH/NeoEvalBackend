@@ -21,6 +21,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.neoeval.backend.entity.EmailVerificationToken;
+import com.neoeval.backend.repository.EmailVerificationTokenRepository;
+import com.neoeval.backend.service.EmailService;
+import com.neoeval.backend.util.EmailDomainValidator;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -38,6 +44,8 @@ public class AuthServiceImpl implements AuthService {
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
+    private final EmailService emailService;
+    private final EmailVerificationTokenRepository tokenRepository;
 
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
@@ -46,7 +54,9 @@ public class AuthServiceImpl implements AuthService {
             ParentRepository parentRepository,
             TeacherRepository teacherRepository,
             PasswordEncoder passwordEncoder,
-            JwtTokenProvider tokenProvider
+            JwtTokenProvider tokenProvider,
+            EmailService emailService,
+            EmailVerificationTokenRepository tokenRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -55,6 +65,8 @@ public class AuthServiceImpl implements AuthService {
         this.teacherRepository = teacherRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
+        this.emailService = emailService;
+        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -64,7 +76,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AuthenticationException("Credenciales inválidas"));
 
-        // ✅ PASO 2: VALIDAR ESTADO DE APROBACIÓN
+        // ✅ PASO 2: VALIDAR ESTADO DE VERIFICACIÓN Y APROBACIÓN
+        if (!user.isEmailVerified()) {
+            throw new AuthenticationException("Debes verificar tu correo electrónico antes de iniciar sesión.");
+        }
+
         if (!"APPROVED".equals(user.getApprovalStatus())) {
             if ("PENDING".equals(user.getApprovalStatus())) {
                 throw new AuthenticationException(
@@ -125,8 +141,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse registerUser(RegisterRequest registerRequest) {
+        // Validar que el dominio del correo tenga servidores habilitados (MX Records)
+        String email = registerRequest.getEmail();
+        if (email != null && email.contains("@")) {
+            String domain = email.substring(email.lastIndexOf("@") + 1);
+            if (!EmailDomainValidator.hasMXRecord(domain)) {
+                throw new AuthenticationException("El dominio del correo no existe o no puede recibir correos. Ingresa un correo válido.");
+            }
+        }
+
         // Validar que el email no exista
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new AuthenticationException("El correo ya está registrado");
         }
 
@@ -177,6 +202,18 @@ public class AuthServiceImpl implements AuthService {
 
             default:
                 throw new IllegalArgumentException("Tipo de usuario inválido: " + userType);
+        }
+
+        // ✅ GENERAR Y ENVIAR OTP
+        String otp = generateOtp();
+        EmailVerificationToken verificationToken = new EmailVerificationToken(otp, user, LocalDateTime.now().plusMinutes(15));
+        tokenRepository.save(verificationToken);
+        
+        try {
+            emailService.sendOtpEmail(user.getEmail(), otp);
+        } catch (Exception e) {
+            logger.error("Error enviando el correo de verificación a {}: {}", user.getEmail(), e.getMessage());
+            // No lanzar excepción para que no falle el registro si hay un error temporal con SMTP
         }
 
         // ✅ NO GENERAR TOKEN - El usuario debe esperar aprobación
@@ -249,5 +286,38 @@ public class AuthServiceImpl implements AuthService {
     public void logoutUser(String token) {
         logger.info("El token JWT {} ha sido invalidado (implementación de logout pendiente).", token);
         // Aquí puedes implementar una blacklist de tokens si lo necesitas
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(String email, String otp) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("Usuario no encontrado con ese correo."));
+
+        if (user.isEmailVerified()) {
+            throw new AuthenticationException("El correo ya se encuentra verificado.");
+        }
+
+        EmailVerificationToken token = tokenRepository.findByUser(user)
+                .orElseThrow(() -> new AuthenticationException("No se encontró un código de verificación para este usuario."));
+
+        if (!token.getToken().equals(otp)) {
+            throw new AuthenticationException("El código OTP es incorrecto.");
+        }
+
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AuthenticationException("El código OTP ha expirado.");
+        }
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+        
+        tokenRepository.deleteByUser(user);
+    }
+
+    private String generateOtp() {
+        SecureRandom random = new SecureRandom();
+        int num = random.nextInt(900000) + 100000;
+        return String.valueOf(num);
     }
 }

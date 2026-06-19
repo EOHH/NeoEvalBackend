@@ -70,6 +70,18 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String email, @RequestParam String otp) {
+        try {
+            authService.verifyEmail(email, otp);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "Correo electrónico verificado con éxito. Ahora debes esperar la aprobación del administrador.", null));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, e.getMessage(), null));
+        }
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse> refreshToken(
             @RequestHeader(value = "Authorization", required = false) String authHeader,

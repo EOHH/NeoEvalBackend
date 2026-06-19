@@ -5,12 +5,14 @@ import com.neoeval.backend.dto.request.SubmitAnswerRequest;
 import com.neoeval.backend.dto.response.AssignmentResponse;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AssignmentService {
     AssignmentResponse getAssignmentById(Long id);
 
-    List<AssignmentResponse> getAssignmentsByStudentId(Long studentId);
-    List<AssignmentResponse> getAssignmentsByExamId(Long examId);
+    Page<AssignmentResponse> getAssignmentsByStudentId(Long studentId, Pageable pageable);
+    Page<AssignmentResponse> getAssignmentsByExamId(Long examId, Pageable pageable);
 
     // Método para que el estudiante envíe sus respuestas a una asignación
     AssignmentResponse submitAssignment(Long assignmentId, List<SubmitAnswerRequest> answers);

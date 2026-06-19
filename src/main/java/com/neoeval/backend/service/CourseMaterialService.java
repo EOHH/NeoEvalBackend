@@ -6,6 +6,8 @@ import com.neoeval.backend.dto.request.MaterialResourceRequest;
 import com.neoeval.backend.dto.response.ClassSessionResponse;
 import com.neoeval.backend.dto.response.CourseModuleResponse;
 import com.neoeval.backend.dto.response.MaterialResourceResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile; // 👈 NUEVA IMPORTACIÓN
@@ -19,7 +21,7 @@ public interface CourseMaterialService {
     CourseModuleResponse createModule(CourseModuleRequest request, Long currentTeacherId);
     CourseModuleResponse updateModule(Long moduleId, CourseModuleRequest request, Long currentTeacherId);
     CourseModuleResponse getModuleWithDetails(Long moduleId);
-    List<CourseModuleResponse> getModulesByTeacher(Long teacherId);
+    Page<CourseModuleResponse> getModulesByTeacher(Long teacherId, Pageable pageable);
     void deleteModule(Long moduleId, Long currentTeacherId);
 
     // --- Operaciones de ClassSession ---
@@ -50,7 +52,7 @@ public interface CourseMaterialService {
      * ✅ NUEVO: Obtiene todos los módulos de curso a los que un estudiante
      * tiene acceso (basado en sus grupos de clase y asignaturas).
      */
-    List<CourseModuleResponse> getModulesForStudent(Long studentId);
+    Page<CourseModuleResponse> getModulesForStudent(Long studentId, Pageable pageable);
 
     /**
      * Elimina un recurso (y el archivo asociado, si existe).

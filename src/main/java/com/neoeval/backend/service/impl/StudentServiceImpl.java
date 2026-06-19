@@ -12,9 +12,10 @@ import com.neoeval.backend.service.StudentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -90,30 +91,24 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentResponse> getAllStudents() {
-        return studentRepository.findAll().stream()
-                .map(this::mapToStudentResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResponse> getAllStudents(Pageable pageable) {
+        return studentRepository.findAll(pageable)
+                .map(this::mapToStudentResponse);
     }
 
     @Override
-    public List<StudentResponse> getStudentsByGroup(Long groupId) {
-        ClassGroup classGroup = classGroupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("ClassGroup", "id", groupId));
-
-        Set<Student> studentsSet = classGroup.getStudents();
-
-        return studentsSet.stream()
-                .map(this::mapToStudentResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResponse> getStudentsByGroup(Long groupId, Pageable pageable) {
+        if (!classGroupRepository.existsById(groupId)) {
+            throw new ResourceNotFoundException("ClassGroup", "id", groupId);
+        }
+        return studentRepository.findByClassGroups_Id(groupId, pageable)
+                .map(this::mapToStudentResponse);
     }
 
     @Override
-    public List<StudentResponse> searchStudentsByName(String name) {
-        List<Student> students = studentRepository.findByNameContainingIgnoreCase(name);
-        return students.stream()
-                .map(this::mapToStudentResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResponse> searchStudentsByName(String name, Pageable pageable) {
+        Page<Student> students = studentRepository.findByNameContainingIgnoreCase(name, pageable);
+        return students.map(this::mapToStudentResponse);
     }
 
     // --- 3. LÓGICA CLAVE DE GAMIFICACIÓN (Sin cambios en la lógica) ---

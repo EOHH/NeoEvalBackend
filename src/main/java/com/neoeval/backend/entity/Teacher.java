@@ -1,9 +1,12 @@
 package com.neoeval.backend.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "teachers")
@@ -17,10 +20,12 @@ public class Teacher extends User {
     private String expertiseArea;
 
     @ManyToMany(mappedBy = "teachers")
-    private List<Subject> subjects = new ArrayList<>();
+    @BatchSize(size = 20)
+    private Set<Subject> subjects = new HashSet<>();
 
     // 🚀 NUEVA RELACIÓN: Un profesor gestiona muchos módulos de curso
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<CourseModule> courseModules = new ArrayList<>();
 
 
@@ -57,11 +62,11 @@ public class Teacher extends User {
         this.expertiseArea = expertiseArea;
     }
 
-    public List<Subject> getSubjects() {
+    public Set<Subject> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(List<Subject> subjects) {
+    public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
 

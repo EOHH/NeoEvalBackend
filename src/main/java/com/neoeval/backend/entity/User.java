@@ -3,6 +3,7 @@ package com.neoeval.backend.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "users")
@@ -34,7 +35,10 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
-    // ✅ NUEVOS CAMPOS DE APROBACIÓN
+    // ✅ NUEVOS CAMPOS DE APROBACIÓN Y VERIFICACIÓN
+    @Column(name = "is_email_verified", nullable = false)
+    private boolean isEmailVerified = false;
+
     @Column(name = "approval_status", nullable = false, length = 20)
     private String approvalStatus = "PENDING"; // PENDING, APPROVED, REJECTED
 
@@ -48,13 +52,16 @@ public class User {
     private String rejectionReason;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Message> sentMessages = new HashSet<>();
 
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Message> receivedMessages = new HashSet<>();
 
     @ManyToMany(mappedBy = "teachers")
-    private List<Subject> subjects = new ArrayList<>();
+    @BatchSize(size = 20)
+    private Set<Subject> subjects = new HashSet<>();
 
     // Constructores
     public User() {
@@ -151,15 +158,23 @@ public class User {
         this.receivedMessages = receivedMessages;
     }
 
-    public List<Subject> getSubjects() {
+    public Set<Subject> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(List<Subject> subjects) {
+    public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
 
     // ✅ NUEVOS GETTERS Y SETTERS
+    public boolean isEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
+
     public String getApprovalStatus() {
         return approvalStatus;
     }

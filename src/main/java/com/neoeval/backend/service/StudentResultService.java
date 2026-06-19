@@ -6,6 +6,8 @@ import com.neoeval.backend.entity.StudentResult;
 import com.neoeval.backend.dto.response.StudentExamResultDetailResponse;
 import com.neoeval.backend.dto.request.UpdateResultScoreRequest;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface StudentResultService {
@@ -13,9 +15,9 @@ public interface StudentResultService {
     StudentResult processQuizSubmission(QuizSubmissionRequest request);
 
     // ✅ La interfaz ya está correcta para devolver la lista de DTOs
-    List<StudentResultResponse> getResultsByStudent(Long studentId);
+    Page<StudentResultResponse> getResultsByStudent(Long studentId, Pageable pageable);
 
-    List<StudentExamResultDetailResponse> getStudentResultsByExam(Long examId);
+    Page<StudentExamResultDetailResponse> getStudentResultsByExam(Long examId, Pageable pageable);
 
     StudentExamResultDetailResponse updateResultScore(Long resultId, UpdateResultScoreRequest request);
 }

@@ -10,16 +10,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Collections; // Importar Collections para lista vacía
+import java.util.Collections;
+import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
+import com.neoeval.backend.service.FileStorageService;
 
 @RestController
 @RequestMapping("/api/questions")
 public class QuestionController {
 
     private final QuestionService questionService;
+    private final FileStorageService fileStorageService;
 
-    public QuestionController(QuestionService questionService) {
+    public QuestionController(QuestionService questionService, FileStorageService fileStorageService) {
         this.questionService = questionService;
+        this.fileStorageService = fileStorageService;
     }
 
     // CREATE
@@ -85,5 +90,17 @@ public class QuestionController {
     public ResponseEntity<List<QuestionResponse>> getAllQuestions() {
         List<QuestionResponse> responses = questionService.getAllQuestions();
         return ResponseEntity.ok(responses);
+    }
+
+    // UPLOAD IMAGE
+    @PostMapping("/upload-image")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> uploadQuestionImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String imageId = fileStorageService.saveFile(file);
+            return ResponseEntity.ok(Map.of("imageId", imageId));
+        } catch (java.io.IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

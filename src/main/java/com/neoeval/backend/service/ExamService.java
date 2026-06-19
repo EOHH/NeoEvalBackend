@@ -4,17 +4,18 @@ import com.neoeval.backend.dto.request.CreateExamRequest;
 import com.neoeval.backend.dto.response.ExamResponse;
 import com.neoeval.backend.dto.response.ExamSummaryResponse; // 👈 NUEVA IMPORTACIÓN
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ExamService {
     ExamResponse createExam(CreateExamRequest examRequest);
     ExamResponse getExamById(Long id);
-    List<ExamResponse> getExamsByGroup(Long groupId);
-    List<ExamResponse> getExamsByTeacher(Long teacherId);
+    Page<ExamResponse> getExamsByGroup(Long groupId, Pageable pageable);
+    Page<ExamResponse> getExamsByTeacher(Long teacherId, Pageable pageable);
 
     // ✅ NUEVO: Métodos para obtener exámenes del estudiante
-    List<ExamResponse> getAvailableExamsForStudent(Long studentId);
-    List<ExamResponse> getStudentExamHistory(Long studentId);
+    Page<ExamResponse> getAvailableExamsForStudent(Long studentId, Pageable pageable);
+    Page<ExamResponse> getStudentExamHistory(Long studentId, Pageable pageable);
 
     // =================================================================
     // 🚀 NUEVO MÉTODO PARA EL RESUMEN DEL PROFESOR
@@ -25,7 +26,7 @@ public interface ExamService {
      * @param teacherId El ID del profesor.
      * @return Lista de ExamSummaryResponse con datos agregados.
      */
-    List<ExamSummaryResponse> getExamSummariesByTeacher(Long teacherId);
+    Page<ExamSummaryResponse> getExamSummariesByTeacher(Long teacherId, Pageable pageable);
 
     ExamResponse updateExam(Long id, CreateExamRequest examRequest);
     void deleteExam(Long id);

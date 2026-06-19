@@ -8,5 +8,6 @@ public interface AuthService {
     AuthResponse authenticateUser(LoginRequest loginRequest);
     AuthResponse registerUser(RegisterRequest registerRequest);
     AuthResponse refreshToken(String refreshToken);
+    void verifyEmail(String email, String otp);
     void logoutUser(String token);
 }

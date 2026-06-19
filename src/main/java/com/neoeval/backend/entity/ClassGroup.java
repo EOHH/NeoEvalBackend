@@ -3,6 +3,7 @@ package com.neoeval.backend.entity;
 import jakarta.persistence.*;
 import java.time.Instant; // 🟢 CAMBIO CLAVE
 import java.util.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "class_groups")
@@ -29,16 +30,20 @@ public class ClassGroup {
     private Teacher teacher;
 
     @ManyToMany(mappedBy = "classGroups")
+    @BatchSize(size = 20)
     private Set<Student> students = new HashSet<>();
 
     @OneToMany(mappedBy = "classGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Exam> exams = new HashSet<>();
 
     // 🟢 NUEVA RELACIÓN INVERSA
     @OneToMany(mappedBy = "classGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<CourseModule> courseModules = new HashSet<>();
 
     @ManyToMany(mappedBy = "classGroups")
+    @BatchSize(size = 20)
     private List<Subject> subjects = new ArrayList<>();
 
     // 🟢 Constructor

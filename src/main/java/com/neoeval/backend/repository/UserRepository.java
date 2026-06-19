@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -16,12 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    List<User> findByUserType(String userType);
+    Page<User> findByUserType(String userType, Pageable pageable);
 
     // ✅ NUEVOS MÉTODOS PARA APROBACIÓN
-    List<User> findByApprovalStatus(String approvalStatus);
+    Page<User> findByApprovalStatus(String approvalStatus, Pageable pageable);
 
-    List<User> findByApprovalStatusAndUserType(String approvalStatus, String userType);
+    Page<User> findByApprovalStatusAndUserType(String approvalStatus, String userType, Pageable pageable);
 
     long countByApprovalStatus(String approvalStatus);
 }

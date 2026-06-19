@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant; // Importación corregida a Instant
 import java.time.LocalDateTime; // Se mantiene para el DTO
 import java.time.ZoneId; // Nuevo import para la conversión
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,10 +32,9 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubjectResponse> getAllSubjects() {
-        return subjectRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<SubjectResponse> getAllSubjects(Pageable pageable) {
+        return subjectRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
@@ -125,31 +126,28 @@ public class SubjectServiceImpl implements SubjectService {
     // Los demás métodos permanecen igual...
     @Override
     @Transactional(readOnly = true)
-    public List<SubjectResponse> getSubjectsByTeacher(Long teacherId) {
+    public Page<SubjectResponse> getSubjectsByTeacher(Long teacherId, Pageable pageable) {
         if (!userRepository.existsById(teacherId)) {
             throw new ResourceNotFoundException("Profesor no encontrado con id: " + teacherId);
         }
 
-        return subjectRepository.findSubjectsByTeacherId(teacherId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return subjectRepository.findSubjectsByTeacherId(teacherId, pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubjectResponse> getSubjectsByStudent(Long studentId) {
+    public Page<SubjectResponse> getSubjectsByStudent(Long studentId, Pageable pageable) {
         // Implementación simplificada
-        return subjectRepository.findByIsActive(true).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return subjectRepository.findByIsActive(true, pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubjectResponse> searchSubjects(String query) {
-        return subjectRepository.findByNameContainingIgnoreCase(query).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<SubjectResponse> searchSubjects(String query, Pageable pageable) {
+        return subjectRepository.findByNameContainingIgnoreCase(query, pageable)
+                .map(this::mapToResponse);
     }
 
     @Override

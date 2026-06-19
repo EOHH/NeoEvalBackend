@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 SecurityConstants.SIGN_UP_URL,
                                 SecurityConstants.LOGIN_URL,
+                                SecurityConstants.VERIFY_EMAIL_URL,
                                 "/error",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

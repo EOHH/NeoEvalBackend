@@ -3,6 +3,7 @@ package com.neoeval.backend.entity;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "questions")
@@ -38,7 +39,11 @@ public class Question {
     private Exam exam;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Answer> answers = new HashSet<>();
+
+    @Column(name = "image_id", columnDefinition = "VARCHAR(36)")
+    private String imageId;
 
     // Constructors
     public Question() {
@@ -135,5 +140,13 @@ public class Question {
     public void addAnswer(Answer answer) {
         answers.add(answer);
         answer.setQuestion(this);
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
     }
 }

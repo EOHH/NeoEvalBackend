@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "course_modules")
@@ -42,6 +43,7 @@ public class CourseModule {
     // 🔗 Relación 1:M con ClassSession (Las sesiones temáticas)
     @OneToMany(mappedBy = "courseModule", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderIndex ASC")
+    @BatchSize(size = 20)
     private List<ClassSession> sessions = new ArrayList<>();
 
     // Constructores

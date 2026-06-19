@@ -7,6 +7,9 @@ import com.neoeval.backend.service.TeacherService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -26,20 +29,25 @@ public class TeacherController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TeacherResponse>> getAllTeachers() {
-        List<TeacherResponse> responses = teacherService.getAllTeachers();
+    public ResponseEntity<Page<TeacherResponse>> getAllTeachers(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<TeacherResponse> responses = teacherService.getAllTeachers(pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}/groups")
-    public ResponseEntity<List<ClassGroupResponse>> getGroupsByTeacher(@PathVariable Long id) {
-        List<ClassGroupResponse> responses = teacherService.getGroupsByTeacher(id);
+    public ResponseEntity<Page<ClassGroupResponse>> getGroupsByTeacher(
+            @PathVariable Long id,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ClassGroupResponse> responses = teacherService.getGroupsByTeacher(id, pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}/exams")
-    public ResponseEntity<List<ExamResponse>> getExamsByTeacher(@PathVariable Long id) {
-        List<ExamResponse> responses = teacherService.getExamsByTeacher(id);
+    public ResponseEntity<Page<ExamResponse>> getExamsByTeacher(
+            @PathVariable Long id,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamResponse> responses = teacherService.getExamsByTeacher(id, pageable);
         return ResponseEntity.ok(responses);
     }
 }

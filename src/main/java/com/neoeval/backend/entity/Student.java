@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import org.hibernate.annotations.BatchSize;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,15 +33,19 @@ public class Student extends User {
             joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "class_group_id")
     )
+    @BatchSize(size = 20)
     private Set<ClassGroup> classGroups = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Assignment> assignments = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Certificate> certificates = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<StudentAchievement> achievements = new HashSet<>();
 
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

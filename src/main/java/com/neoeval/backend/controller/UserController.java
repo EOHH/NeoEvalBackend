@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +33,9 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.getAllUsers();
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<UserResponse> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
     }
 
@@ -54,8 +58,9 @@ public class UserController {
     }
 
     @GetMapping("/students")
-    public ResponseEntity<List<StudentResponse>> getAllStudents() {
-        List<StudentResponse> students = userService.getAllStudents();
+    public ResponseEntity<Page<StudentResponse>> getAllStudents(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentResponse> students = userService.getAllStudents(pageable);
         return ResponseEntity.ok(students);
     }
 
@@ -101,9 +106,10 @@ public class UserController {
     // ✅ NUEVOS ENDPOINTS PARA APROBACIÓN (SIN GENÉRICOS)
     @GetMapping("/pending")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> getPendingUsers() {
+    public ResponseEntity<ApiResponse> getPendingUsers(
+            @PageableDefault(size = 20) Pageable pageable) {
         try {
-            List<UserResponse> pendingUsers = userService.getPendingUsers();
+            Page<UserResponse> pendingUsers = userService.getPendingUsers(pageable);
             return ResponseEntity.ok(
                     new ApiResponse(true, "Usuarios pendientes obtenidos exitosamente", pendingUsers)
             );

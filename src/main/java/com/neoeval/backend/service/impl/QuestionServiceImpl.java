@@ -46,6 +46,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setOptions(questionRequest.getOptions());
         question.setCorrectAnswer(questionRequest.getCorrectAnswer());
         question.setExplanation(questionRequest.getExplanation());
+        question.setImageId(questionRequest.getImageId());
         question.setExam(exam);
 
         // 🚨 2. Lógica CRÍTICA: Convertir opciones/respuesta clave en entidades Answer
@@ -99,6 +100,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setOptions(questionRequest.getOptions());
         question.setCorrectAnswer(questionRequest.getCorrectAnswer());
         question.setExplanation(questionRequest.getExplanation());
+        question.setImageId(questionRequest.getImageId());
 
         // 🚨 2. Lógica CRÍTICA para la ACTUALIZACIÓN:
         if ("MULTIPLE_CHOICE".equals(question.getQuestionType()) ||
@@ -301,6 +303,7 @@ public class QuestionServiceImpl implements QuestionService {
         response.setOptions(question.getOptions());
         response.setCorrectAnswer(question.getCorrectAnswer());
         response.setExplanation(question.getExplanation());
+        response.setImageId(question.getImageId());
 
         if (question.getExam() != null) {
             response.setExamId(question.getExam().getId());

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.Instant;
@@ -179,20 +181,16 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamResponse> getExamsByGroup(Long groupId) {
-        List<Exam> exams = examRepository.findByClassGroup_Id(groupId);
-        return exams.stream()
-                .map(this::mapToExamResponse)
-                .collect(Collectors.toList());
+    public Page<ExamResponse> getExamsByGroup(Long groupId, Pageable pageable) {
+        Page<Exam> exams = examRepository.findByClassGroup_Id(groupId, pageable);
+        return exams.map(this::mapToExamResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamResponse> getExamsByTeacher(Long teacherId) {
-        List<Exam> exams = examRepository.findByTeacher_Id(teacherId);
-        return exams.stream()
-                .map(this::mapToExamResponse)
-                .collect(Collectors.toList());
+    public Page<ExamResponse> getExamsByTeacher(Long teacherId, Pageable pageable) {
+        Page<Exam> exams = examRepository.findByTeacher_Id(teacherId, pageable);
+        return exams.map(this::mapToExamResponse);
     }
 
     @Override
@@ -252,7 +250,7 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamResponse> getAvailableExamsForStudent(Long studentId) {
+    public Page<ExamResponse> getAvailableExamsForStudent(Long studentId, Pageable pageable) {
         User studentUser = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Estudiante", "id", studentId));
 
@@ -265,7 +263,7 @@ public class ExamServiceImpl implements ExamService {
         Set<ClassGroup> groups = student.getClassGroups();
         if (groups == null || groups.isEmpty()) {
             log.info("DEBUG Quizzes (ID: {}): El estudiante no pertenece a ningún grupo. Retornando lista vacía.", studentId);
-            return List.of();
+            return Page.empty();
         }
 
         List<Long> classGroupIds = groups.stream()
@@ -275,50 +273,41 @@ public class ExamServiceImpl implements ExamService {
         log.info("DEBUG Quizzes (ID: {}): Buscando TODOS los exámenes asignados a los grupos: {}",
                 studentId, classGroupIds);
 
-        List<Exam> assignedExams = examRepository.findAllAssignedExamsForStudent(
-                classGroupIds
+        Page<Exam> assignedExams = examRepository.findAllAssignedExamsForStudent(
+                classGroupIds, pageable
         );
 
         log.info("DEBUG Quizzes (ID: {}): Exámenes totales encontrados (Abiertos, Cerrados, Próximos): {}",
-                studentId, assignedExams.size());
+                studentId, assignedExams.getTotalElements());
 
-        return assignedExams.stream()
-                .map(this::mapToExamResponse)
-                .collect(Collectors.toList());
+        return assignedExams.map(this::mapToExamResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamResponse> getStudentExamHistory(Long studentId) {
+    public Page<ExamResponse> getStudentExamHistory(Long studentId, Pageable pageable) {
         studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Estudiante", "id", studentId));
 
-        List<StudentResult> completedResults = studentResultRepository.findResultsWithExamAndSubjectByStudentId(studentId);
+        Page<StudentResult> completedResults = studentResultRepository.findResultsWithExamAndSubjectByStudentId(studentId, pageable);
 
-        return completedResults.stream()
-                .map(studentResult -> {
-                    Exam exam = studentResult.getExam();
-
-                    if (exam == null) {
-                        return null;
-                    }
-
-                    ExamResponse response = mapToExamResponse(exam);
-                    response.setIsCompleted(true);
-                    return response;
-                })
-                .filter(response -> response != null)
-                .collect(Collectors.toList());
+        return completedResults.map(studentResult -> {
+            Exam exam = studentResult.getExam();
+            if (exam == null) {
+                return null; // Will map to null inside the Page, might need a filter later if Spring Data allows
+            }
+            ExamResponse response = mapToExamResponse(exam);
+            response.setIsCompleted(true);
+            return response;
+        });
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamSummaryResponse> getExamSummariesByTeacher(Long teacherId) {
+    public Page<ExamSummaryResponse> getExamSummariesByTeacher(Long teacherId, Pageable pageable) {
         teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor", "id", teacherId));
 
-        List<ExamSummaryResponse> summaries = studentResultRepository.findExamSummariesByTeacherId(teacherId);
-
-        return summaries;
+        return studentResultRepository.findExamSummariesByTeacherId(teacherId, pageable);
     }
 }

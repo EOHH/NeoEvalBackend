@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 @Repository
@@ -16,16 +17,18 @@ public interface ClassGroupRepository extends JpaRepository<ClassGroup, Long> {
     boolean existsByName(String name);
 
     // ✅ Encontrar grupos por asignatura
-    @Query("SELECT cg FROM ClassGroup cg JOIN cg.subjects s WHERE s.id = :subjectId")
-    List<ClassGroup> findClassGroupsBySubjectId(@Param("subjectId") Long subjectId);
+    @Query(value = "SELECT cg FROM ClassGroup cg JOIN cg.subjects s WHERE s.id = :subjectId",
+           countQuery = "SELECT count(cg) FROM ClassGroup cg JOIN cg.subjects s WHERE s.id = :subjectId")
+    Page<ClassGroup> findClassGroupsBySubjectId(@Param("subjectId") Long subjectId, Pageable pageable);
 
     // ✅ Encontrar grupos sin asignaturas
-    @Query("SELECT cg FROM ClassGroup cg WHERE cg.subjects IS EMPTY")
-    List<ClassGroup> findClassGroupsWithoutSubjects();
+    @Query(value = "SELECT cg FROM ClassGroup cg WHERE cg.subjects IS EMPTY",
+           countQuery = "SELECT count(cg) FROM ClassGroup cg WHERE cg.subjects IS EMPTY")
+    Page<ClassGroup> findClassGroupsWithoutSubjects(Pageable pageable);
 
     // Correcto: Para encontrar ClassGroups por el ID del Teacher asociado
     // Spring Data JPA lo traduce a: SELECT cg FROM ClassGroup cg WHERE cg.teacher.id = :teacherId
-    List<ClassGroup> findByTeacher_Id(Long teacherId);
+    Page<ClassGroup> findByTeacher_Id(Long teacherId, Pageable pageable);
 
     // Correcto: Para contar ClassGroups por el ID del Teacher asociado
     // Spring Data JPA lo traduce a: SELECT COUNT(cg) FROM ClassGroup cg WHERE cg.teacher.id = :teacherId

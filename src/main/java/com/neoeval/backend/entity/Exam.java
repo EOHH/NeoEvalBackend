@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "exams")
@@ -52,12 +53,15 @@ public class Exam {
     private ClassGroup classGroup;
 
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Question> questions = new HashSet<>();
 
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Assignment> assignments = new HashSet<>();
 
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<Certificate> certificates = new HashSet<>();
 
     // Constructors

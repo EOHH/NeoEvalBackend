@@ -6,10 +6,13 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "subjects", uniqueConstraints = {
@@ -60,6 +63,7 @@ public class Subject {
 
     // ✅ RELACIÓN CON EXAMS
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<Exam> exams = new ArrayList<>();
 
     // ✅ RELACIÓN CON TEACHERS (Muchos a Muchos)
@@ -69,6 +73,7 @@ public class Subject {
             joinColumns = @JoinColumn(name = "subject_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @BatchSize(size = 20)
     private List<User> teachers = new ArrayList<>();
 
     // ✅ RELACIÓN CON CLASS GROUPS (Muchos a Muchos)
@@ -78,10 +83,12 @@ public class Subject {
             joinColumns = @JoinColumn(name = "subject_id"),
             inverseJoinColumns = @JoinColumn(name = "class_group_id")
     )
+    @BatchSize(size = 20)
     private List<ClassGroup> classGroups = new ArrayList<>();
 
     // 🚀 NUEVA RELACIÓN: Una asignatura tiene muchos Módulos de Curso
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<CourseModule> courseModules = new ArrayList<>();
 
     // 🔹 Constructores

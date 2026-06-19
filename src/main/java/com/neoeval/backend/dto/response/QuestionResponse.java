@@ -10,6 +10,7 @@ public class QuestionResponse {
     private String correctAnswer; // JSON string
     private String explanation;
     private Long examId;
+    private String imageId;
 
     // Getters and Setters
     public Long getId() {
@@ -82,5 +83,13 @@ public class QuestionResponse {
 
     public void setExamId(Long examId) {
         this.examId = examId;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
     }
 }

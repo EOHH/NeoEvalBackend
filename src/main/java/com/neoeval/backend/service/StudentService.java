@@ -5,7 +5,8 @@ import com.neoeval.backend.dto.response.StudentResponse;
 import com.neoeval.backend.dto.response.ExamResponse;
 import com.neoeval.backend.dto.response.CertificateResponse;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface StudentService {
 
@@ -16,9 +17,9 @@ public interface StudentService {
 
     // --- LECTURA ---
     StudentResponse getStudentById(Long id);
-    List<StudentResponse> getAllStudents();
-    List<StudentResponse> getStudentsByGroup(Long groupId);
-    List<StudentResponse> searchStudentsByName(String name);
+    Page<StudentResponse> getAllStudents(Pageable pageable);
+    Page<StudentResponse> getStudentsByGroup(Long groupId, Pageable pageable);
+    Page<StudentResponse> searchStudentsByName(String name, Pageable pageable);
 
     // --- LÓGICA CLAVE DE GAMIFICACIÓN ---
     /**

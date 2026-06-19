@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -35,14 +38,18 @@ public class ExamController {
     }
 
     @GetMapping("/group/{groupId}")
-    public ResponseEntity<List<ExamResponse>> getExamsByGroup(@PathVariable Long groupId) {
-        List<ExamResponse> responses = examService.getExamsByGroup(groupId);
+    public ResponseEntity<Page<ExamResponse>> getExamsByGroup(
+            @PathVariable Long groupId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamResponse> responses = examService.getExamsByGroup(groupId, pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<List<ExamResponse>> getExamsByTeacher(@PathVariable Long teacherId) {
-        List<ExamResponse> responses = examService.getExamsByTeacher(teacherId);
+    public ResponseEntity<Page<ExamResponse>> getExamsByTeacher(
+            @PathVariable Long teacherId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamResponse> responses = examService.getExamsByTeacher(teacherId, pageable);
         return ResponseEntity.ok(responses);
     }
 
@@ -52,24 +59,30 @@ public class ExamController {
     // =================================================================
     @GetMapping("/teacher/{teacherId}/results/summary")
     @PreAuthorize("hasRole('TEACHER')") // Solo profesores pueden acceder a sus resúmenes
-    public ResponseEntity<List<ExamSummaryResponse>> getExamSummariesByTeacher(@PathVariable Long teacherId) {
-        List<ExamSummaryResponse> responses = examService.getExamSummariesByTeacher(teacherId);
+    public ResponseEntity<Page<ExamSummaryResponse>> getExamSummariesByTeacher(
+            @PathVariable Long teacherId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamSummaryResponse> responses = examService.getExamSummariesByTeacher(teacherId, pageable);
         return ResponseEntity.ok(responses);
     }
 
     // 🛑 ENDPOINT 1: Quizzes disponibles para un estudiante
     @GetMapping("/student/{studentId}/available")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<ExamResponse>> getAvailableExamsForStudent(@PathVariable Long studentId) {
-        List<ExamResponse> responses = examService.getAvailableExamsForStudent(studentId);
+    public ResponseEntity<Page<ExamResponse>> getAvailableExamsForStudent(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamResponse> responses = examService.getAvailableExamsForStudent(studentId, pageable);
         return ResponseEntity.ok(responses);
     }
 
     // 🛑 ENDPOINT 2: Historial de quizzes de un estudiante
     @GetMapping("/student/{studentId}/history")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<ExamResponse>> getStudentExamHistory(@PathVariable Long studentId) {
-        List<ExamResponse> responses = examService.getStudentExamHistory(studentId);
+    public ResponseEntity<Page<ExamResponse>> getStudentExamHistory(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ExamResponse> responses = examService.getStudentExamHistory(studentId, pageable);
         return ResponseEntity.ok(responses);
     }
 

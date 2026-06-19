@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class CourseMaterialServiceImpl implements CourseMaterialService {
@@ -212,10 +214,9 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CourseModuleResponse> getModulesByTeacher(Long teacherId) {
-        return moduleRepository.findByTeacherId(teacherId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<CourseModuleResponse> getModulesByTeacher(Long teacherId, Pageable pageable) {
+        return moduleRepository.findByTeacherId(teacherId, pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
@@ -406,10 +407,9 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
     // ===================================
     @Override
     @Transactional(readOnly = true)
-    public List<CourseModuleResponse> getModulesForStudent(Long studentId) {
-        return moduleRepository.findModulesByStudentId(studentId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<CourseModuleResponse> getModulesForStudent(Long studentId, Pageable pageable) {
+        return moduleRepository.findModulesByStudentId(studentId, pageable)
+                .map(this::mapToResponse);
     }
 
     // ===================================

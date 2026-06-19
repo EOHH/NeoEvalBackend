@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -38,15 +41,18 @@ public class ClassGroupController {
 
     @GetMapping // GET /api/groups - Obtener todos los grupos
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public ResponseEntity<List<ClassGroupResponse>> getAllGroups() {
-        List<ClassGroupResponse> responses = classGroupService.getAllGroups();
+    public ResponseEntity<Page<ClassGroupResponse>> getAllGroups(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ClassGroupResponse> responses = classGroupService.getAllGroups(pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/teacher/{teacherId}") // GET /api/groups/teacher/{teacherId} - Obtener grupos por profesor
     @PreAuthorize("hasRole('TEACHER') and #teacherId == authentication.principal.id or hasRole('ADMIN')")
-    public ResponseEntity<List<ClassGroupResponse>> getGroupsByTeacher(@PathVariable Long teacherId) {
-        List<ClassGroupResponse> responses = classGroupService.getGroupsByTeacherId(teacherId);
+    public ResponseEntity<Page<ClassGroupResponse>> getGroupsByTeacher(
+            @PathVariable Long teacherId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<ClassGroupResponse> responses = classGroupService.getGroupsByTeacherId(teacherId, pageable);
         return ResponseEntity.ok(responses);
     }
 

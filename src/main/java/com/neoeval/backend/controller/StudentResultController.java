@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid; // 🚀 IMPORTACIÓN CLAVE para validación
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
@@ -35,16 +38,20 @@ public class StudentResultController {
 
     // Endpoint: GET /api/student-results/student/{studentId} (Historial)
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<StudentResultResponse>> getResultsByStudent(@PathVariable Long studentId) {
-        List<StudentResultResponse> results = studentResultService.getResultsByStudent(studentId);
+    public ResponseEntity<Page<StudentResultResponse>> getResultsByStudent(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentResultResponse> results = studentResultService.getResultsByStudent(studentId, pageable);
         return ResponseEntity.ok(results);
     }
 
     // 🚀 ENDPOINT 1: Resultados por Examen (Para la lista del profesor)
     @GetMapping("/exam/{examId}")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity<List<StudentExamResultDetailResponse>> getStudentResultsByExam(@PathVariable Long examId) {
-        List<StudentExamResultDetailResponse> results = studentResultService.getStudentResultsByExam(examId);
+    public ResponseEntity<Page<StudentExamResultDetailResponse>> getStudentResultsByExam(
+            @PathVariable Long examId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentExamResultDetailResponse> results = studentResultService.getStudentResultsByExam(examId, pageable);
         return ResponseEntity.ok(results);
     }
 

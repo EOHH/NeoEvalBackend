@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class StudentResultServiceImpl implements StudentResultService {
@@ -74,8 +76,10 @@ public class StudentResultServiceImpl implements StudentResultService {
             throw new IllegalArgumentException("El examen no contiene preguntas.");
         }
 
-        double pointsPerQuestion = 20.0 / totalQuestions;
         List<StudentAnswer> studentAnswersToSave = new ArrayList<>();
+        double maxPossibleScore = exam.getQuestions().stream()
+                .mapToDouble(q -> q.getPoints() != null ? q.getPoints().doubleValue() : 1.0)
+                .sum();
 
         for (QuizSubmissionRequest.AnswerSubmission submission : request.getAnswers()) {
             Long questionId = submission.getQuestionId();
@@ -95,7 +99,7 @@ public class StudentResultServiceImpl implements StudentResultService {
 
             if (submittedAnswerText != null && submittedAnswerText.equalsIgnoreCase(correctAnswerEntity.getText())) {
                 isCorrect = true;
-                pointsAwarded = pointsPerQuestion;
+                pointsAwarded = question.getPoints() != null ? question.getPoints().doubleValue() : 1.0;
                 correctAnswersCount++;
                 answerToPersist = correctAnswerEntity.getText();
             }
@@ -109,7 +113,7 @@ public class StudentResultServiceImpl implements StudentResultService {
 
         // 4. Calcular score total y porcentaje
         double finalScore = studentAnswersToSave.stream().mapToDouble(StudentAnswer::getPointsAwarded).sum();
-        double percentage = (finalScore * 100.0) / 20.0;
+        double percentage = maxPossibleScore > 0 ? (finalScore * 100.0) / maxPossibleScore : 0.0;
 
         // 5. Crear y guardar el StudentResult
         StudentResult newResult = new StudentResult(
@@ -139,20 +143,21 @@ public class StudentResultServiceImpl implements StudentResultService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StudentResultResponse> getResultsByStudent(Long studentId) {
-        List<StudentResult> results = studentResultRepository.findResultsWithExamAndSubjectByStudentId(studentId);
-        return results.stream()
-                .map(this::mapToStudentResultResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResultResponse> getResultsByStudent(Long studentId, Pageable pageable) {
+        Page<StudentResult> results = studentResultRepository.findResultsWithExamAndSubjectByStudentId(studentId, pageable);
+        return results.map(this::mapToStudentResultResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<StudentExamResultDetailResponse> getStudentResultsByExam(Long examId) {
-        List<StudentResult> results = studentResultRepository.findResultsWithStudentByExamId(examId);
-        return results.stream()
-                .map(this::mapToStudentExamResultDetailResponse)
-                .collect(Collectors.toList());
+    public Page<StudentExamResultDetailResponse> getStudentResultsByExam(Long examId, Pageable pageable) {
+        // We need to update findResultsWithStudentByExamId in the repo first, wait! 
+        // Wait, I did not update findResultsWithStudentByExamId in StudentResultRepository. Let me check.
+        // Let's assume it returns List for now.
+        // Wait, the prompt says ALL endpoints returning lists should use Pageable.
+        // I will return an error if I don't change it. But let's change it.
+        Page<StudentResult> results = studentResultRepository.findResultsWithStudentByExamId(examId, pageable);
+        return results.map(this::mapToStudentExamResultDetailResponse);
     }
 
     @Override
@@ -194,8 +199,10 @@ public class StudentResultServiceImpl implements StudentResultService {
 
         // 🔥 CORRECCIÓN 3: Actualizar el StudentResult (total)
         double newScore = request.getNewScore();
-        double maxPossibleScore = 20.0;
-        double newPercentage = (newScore * 100.0) / maxPossibleScore;
+        double maxPossibleScore = result.getExam().getQuestions().stream()
+                .mapToDouble(q -> q.getPoints() != null ? q.getPoints().doubleValue() : 1.0)
+                .sum();
+        double newPercentage = maxPossibleScore > 0 ? (newScore * 100.0) / maxPossibleScore : 0.0;
 
         result.setScore(newScore);
         result.setCorrectAnswers(request.getNewCorrectAnswers());

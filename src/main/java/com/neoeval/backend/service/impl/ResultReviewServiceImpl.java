@@ -47,7 +47,9 @@ public class ResultReviewServiceImpl implements ResultReviewService {
                 .collect(Collectors.toList());
 
         // 3. Ensamblar el DTO de Respuesta final
-        double maxScore = 20.0; // Mantener asunción de puntaje máximo
+        double maxScore = reviewQuestions.stream()
+                .mapToDouble(QuestionReviewDTO::getMaxPoints)
+                .sum();
 
         return new QuizReviewResponse(
                 result.getId(),

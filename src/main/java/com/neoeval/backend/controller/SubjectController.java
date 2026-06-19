@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -21,10 +24,10 @@ public class SubjectController {
         this.subjectService = subjectService;
     }
 
-    // Endpoints existentes...
     @GetMapping
-    public ResponseEntity<List<SubjectResponse>> getAllSubjects() {
-        return ResponseEntity.ok(subjectService.getAllSubjects());
+    public ResponseEntity<Page<SubjectResponse>> getAllSubjects(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(subjectService.getAllSubjects(pageable));
     }
 
     @GetMapping("/{id}")
@@ -54,18 +57,24 @@ public class SubjectController {
     }
 
     @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<List<SubjectResponse>> getSubjectsByTeacher(@PathVariable Long teacherId) {
-        return ResponseEntity.ok(subjectService.getSubjectsByTeacher(teacherId));
+    public ResponseEntity<Page<SubjectResponse>> getSubjectsByTeacher(
+            @PathVariable Long teacherId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(subjectService.getSubjectsByTeacher(teacherId, pageable));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<SubjectResponse>> getSubjectsByStudent(@PathVariable Long studentId) {
-        return ResponseEntity.ok(subjectService.getSubjectsByStudent(studentId));
+    public ResponseEntity<Page<SubjectResponse>> getSubjectsByStudent(
+            @PathVariable Long studentId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(subjectService.getSubjectsByStudent(studentId, pageable));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<SubjectResponse>> searchSubjects(@RequestParam String q) {
-        return ResponseEntity.ok(subjectService.searchSubjects(q));
+    public ResponseEntity<Page<SubjectResponse>> searchSubjects(
+            @RequestParam String q,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(subjectService.searchSubjects(q, pageable));
     }
 
     @PostMapping("/{subjectId}/teacher/{teacherId}")

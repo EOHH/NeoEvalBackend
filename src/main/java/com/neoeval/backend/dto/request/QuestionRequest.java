@@ -33,6 +33,8 @@ public class QuestionRequest {
     @Size(max = 2000, message = "Explanation cannot exceed 2000 characters")
     private String explanation;
 
+    private String imageId;
+
     // Getters and Setters
     public String getQuestionText() {
         return questionText;
@@ -88,5 +90,13 @@ public class QuestionRequest {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
     }
 }

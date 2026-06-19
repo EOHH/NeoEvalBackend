@@ -3,6 +3,7 @@ package com.neoeval.backend.entity;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "achievements")
@@ -25,6 +26,7 @@ public class Achievement {
     private Integer requiredPoints;
 
     @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private Set<StudentAchievement> studentAchievements = new HashSet<>();
 
     // Constructors

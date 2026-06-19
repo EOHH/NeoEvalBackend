@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,11 +37,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(this::mapToUserResponse)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+        return usersPage.map(this::mapToUserResponse);
     }
 
     @Override
@@ -70,11 +70,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<StudentResponse> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-        return students.stream()
-                .map(this::mapToStudentResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResponse> getAllStudents(Pageable pageable) {
+        Page<Student> studentsPage = studentRepository.findAll(pageable);
+        return studentsPage.map(this::mapToStudentResponse);
     }
 
     @Override
@@ -148,11 +146,9 @@ public class UserServiceImpl implements UserService {
 
     // ✅ NUEVOS MÉTODOS PARA APROBACIÓN
     @Override
-    public List<UserResponse> getPendingUsers() {
-        List<User> pendingUsers = userRepository.findByApprovalStatus("PENDING");
-        return pendingUsers.stream()
-                .map(this::mapToUserResponse)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getPendingUsers(Pageable pageable) {
+        Page<User> pendingUsersPage = userRepository.findByApprovalStatus("PENDING", pageable);
+        return pendingUsersPage.map(this::mapToUserResponse);
     }
 
     @Override

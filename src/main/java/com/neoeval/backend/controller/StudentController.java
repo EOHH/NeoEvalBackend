@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @RestController
@@ -58,20 +61,25 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<StudentResponse>> getAllStudents() {
-        List<StudentResponse> responses = studentService.getAllStudents();
+    public ResponseEntity<Page<StudentResponse>> getAllStudents(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentResponse> responses = studentService.getAllStudents(pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<StudentResponse>> searchStudentsByName(@RequestParam("name") String name) {
-        List<StudentResponse> responses = studentService.searchStudentsByName(name);
+    public ResponseEntity<Page<StudentResponse>> searchStudentsByName(
+            @RequestParam("name") String name,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentResponse> responses = studentService.searchStudentsByName(name, pageable);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/group/{groupId}")
-    public ResponseEntity<List<StudentResponse>> getStudentsByGroup(@PathVariable Long groupId) {
-        List<StudentResponse> responses = studentService.getStudentsByGroup(groupId);
+    public ResponseEntity<Page<StudentResponse>> getStudentsByGroup(
+            @PathVariable Long groupId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<StudentResponse> responses = studentService.getStudentsByGroup(groupId, pageable);
         return ResponseEntity.ok(responses);
     }
 

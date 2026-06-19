@@ -15,6 +15,8 @@ import java.time.Instant; // ✅ Usar Instant.now()
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -41,17 +43,15 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public List<AssignmentResponse> getAssignmentsByStudentId(Long studentId) {
-        return assignmentRepository.findByStudentId(studentId).stream()
-                .map(this::mapToAssignmentResponse)
-                .collect(Collectors.toList());
+    public Page<AssignmentResponse> getAssignmentsByStudentId(Long studentId, Pageable pageable) {
+        return assignmentRepository.findByStudentId(studentId, pageable)
+                .map(this::mapToAssignmentResponse);
     }
 
     @Override
-    public List<AssignmentResponse> getAssignmentsByExamId(Long examId) {
-        return assignmentRepository.findByExamId(examId).stream()
-                .map(this::mapToAssignmentResponse)
-                .collect(Collectors.toList());
+    public Page<AssignmentResponse> getAssignmentsByExamId(Long examId, Pageable pageable) {
+        return assignmentRepository.findByExamId(examId, pageable)
+                .map(this::mapToAssignmentResponse);
     }
 
     @Override
