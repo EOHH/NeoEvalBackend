@@ -4,5 +4,7 @@ public enum QuestionType {
     MATH_EQUATION,
     OPEN_TEXT,
     GEOMETRY,
-    MULTIPLE_CHOICE
+    MULTIPLE_CHOICE,
+    TRUE_FALSE,
+    MATCHING
 }

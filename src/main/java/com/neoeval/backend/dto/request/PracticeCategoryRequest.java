@@ -11,4 +11,7 @@ public class PracticeCategoryRequest {
     private String description;
     
     private boolean active = true;
+
+    @jakarta.validation.constraints.NotNull(message = "El grupo es obligatorio")
+    private Long groupId;
 }

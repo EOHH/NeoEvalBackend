@@ -9,11 +9,17 @@ import com.neoeval.backend.entity.PracticeExercise;
 import com.neoeval.backend.entity.enums.DifficultyLevel;
 import com.neoeval.backend.repository.PracticeCategoryRepository;
 import com.neoeval.backend.repository.PracticeExerciseRepository;
+import com.neoeval.backend.repository.UserRepository;
+import com.neoeval.backend.repository.ClassGroupRepository;
+import com.neoeval.backend.entity.User;
+import com.neoeval.backend.entity.ClassGroup;
+import com.neoeval.backend.entity.Student;
 import com.neoeval.backend.service.PracticeService;
 import com.neoeval.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,21 +29,49 @@ public class PracticeServiceImpl implements PracticeService {
 
     private final PracticeCategoryRepository categoryRepository;
     private final PracticeExerciseRepository exerciseRepository;
+    private final UserRepository userRepository;
+    private final ClassGroupRepository classGroupRepository;
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+    }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PracticeCategoryResponse> getActiveCategories(Pageable pageable) {
-        return categoryRepository.findByActiveTrue(pageable)
-                .map(this::mapToCategoryResponse);
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getUserType().equals("TEACHER")) {
+            return categoryRepository.findByTeacher_Id(currentUser.getId(), pageable)
+                    .map(this::mapToCategoryResponse);
+        } else if (currentUser.getUserType().equals("STUDENT")) {
+            if (currentUser instanceof Student) {
+                Student student = (Student) currentUser;
+                if (!student.getClassGroups().isEmpty()) {
+                    Long groupId = student.getClassGroups().iterator().next().getId();
+                    return categoryRepository.findByClassGroup_IdAndActiveTrue(groupId, pageable)
+                            .map(this::mapToCategoryResponse);
+                }
+            }
+        }
+        return categoryRepository.findByActiveTrue(pageable).map(this::mapToCategoryResponse);
     }
 
     @Override
     @Transactional
     public PracticeCategoryResponse createCategory(PracticeCategoryRequest request) {
+        User currentUser = getCurrentUser();
+        ClassGroup group = classGroupRepository.findById(request.getGroupId())
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
+
         PracticeCategory category = PracticeCategory.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .active(request.isActive())
+                .teacher(currentUser)
+                .classGroup(group)
                 .build();
         
         return mapToCategoryResponse(categoryRepository.save(category));
@@ -56,6 +90,7 @@ public class PracticeServiceImpl implements PracticeService {
                 .content(request.getContent())
                 .options(request.getOptions())
                 .correctAnswer(request.getCorrectAnswer())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         return mapToExerciseResponse(exerciseRepository.save(exercise));
@@ -90,6 +125,7 @@ public class PracticeServiceImpl implements PracticeService {
         exercise.setContent(request.getContent());
         exercise.setOptions(request.getOptions());
         exercise.setCorrectAnswer(request.getCorrectAnswer());
+        exercise.setImageUrl(request.getImageUrl());
 
         PracticeExercise updatedExercise = exerciseRepository.save(exercise);
         return mapToExerciseResponse(updatedExercise);
@@ -109,6 +145,9 @@ public class PracticeServiceImpl implements PracticeService {
                 .name(category.getName())
                 .description(category.getDescription())
                 .active(category.isActive())
+                .groupId(category.getClassGroup() != null ? category.getClassGroup().getId() : null)
+                .groupName(category.getClassGroup() != null ? category.getClassGroup().getName() : null)
+                .teacherId(category.getTeacher() != null ? category.getTeacher().getId() : null)
                 .build();
     }
 
@@ -122,6 +161,7 @@ public class PracticeServiceImpl implements PracticeService {
                 .content(exercise.getContent())
                 .options(exercise.getOptions())
                 .correctAnswer(exercise.getCorrectAnswer())
+                .imageUrl(exercise.getImageUrl())
                 .build();
     }
 }

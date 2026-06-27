@@ -16,4 +16,5 @@ public class PracticeExerciseResponse {
     private String content;
     private String options;
     private String correctAnswer;
+    private String imageUrl;
 }

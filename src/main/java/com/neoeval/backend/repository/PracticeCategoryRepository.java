@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PracticeCategoryRepository extends JpaRepository<PracticeCategory, Long> {
     Page<PracticeCategory> findByActiveTrue(Pageable pageable);
+    Page<PracticeCategory> findByTeacher_Id(Long teacherId, Pageable pageable);
+    Page<PracticeCategory> findByClassGroup_IdAndActiveTrue(Long groupId, Pageable pageable);
 }

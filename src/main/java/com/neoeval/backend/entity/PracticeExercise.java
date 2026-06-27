@@ -37,4 +37,7 @@ public class PracticeExercise {
 
     @Column(name = "correct_answer", columnDefinition = "TEXT", nullable = false)
     private String correctAnswer;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 }

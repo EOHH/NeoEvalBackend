@@ -10,4 +10,7 @@ public class PracticeCategoryResponse {
     private String name;
     private String description;
     private boolean active;
+    private Long groupId;
+    private String groupName;
+    private Long teacherId;
 }

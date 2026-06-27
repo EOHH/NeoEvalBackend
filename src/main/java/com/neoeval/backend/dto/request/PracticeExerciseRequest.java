@@ -25,4 +25,6 @@ public class PracticeExerciseRequest {
 
     @NotBlank(message = "La respuesta correcta es obligatoria")
     private String correctAnswer;
+
+    private String imageUrl;
 }
