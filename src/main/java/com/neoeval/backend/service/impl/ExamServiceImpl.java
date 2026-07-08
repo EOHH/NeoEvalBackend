@@ -88,10 +88,10 @@ public class ExamServiceImpl implements ExamService {
         response.setExamType(exam.getExamType());
 
         if (exam.getOpeningDate() != null) {
-            response.setOpeningDate(exam.getOpeningDate().atZone(zoneId).toLocalDateTime());
+            response.setOpeningDate(exam.getOpeningDate());
         }
         if (exam.getClosingDate() != null) {
-            response.setClosingDate(exam.getClosingDate().atZone(zoneId).toLocalDateTime());
+            response.setClosingDate(exam.getClosingDate());
         }
 
         response.setTimeLimitMinutes(exam.getTimeLimitMinutes());

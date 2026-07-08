@@ -43,20 +43,28 @@ public class PracticeServiceImpl implements PracticeService {
     public Page<PracticeCategoryResponse> getActiveCategories(Pageable pageable) {
         User currentUser = getCurrentUser();
 
-        if (currentUser.getUserType().equals("TEACHER")) {
+        if ("TEACHER".equalsIgnoreCase(currentUser.getUserType())) {
+            // El profesor ve SUS categorías (tanto activas como inactivas para poder gestionarlas)
             return categoryRepository.findByTeacher_Id(currentUser.getId(), pageable)
                     .map(this::mapToCategoryResponse);
-        } else if (currentUser.getUserType().equals("STUDENT")) {
-            if (currentUser instanceof Student) {
-                Student student = (Student) currentUser;
-                if (!student.getClassGroups().isEmpty()) {
+        } else if ("STUDENT".equalsIgnoreCase(currentUser.getUserType())) {
+            // El estudiante SOLO ve categorías activas asignadas a su grupo
+            if (currentUser instanceof Student student) {
+                if (student.getClassGroups() != null && !student.getClassGroups().isEmpty()) {
                     Long groupId = student.getClassGroups().iterator().next().getId();
                     return categoryRepository.findByClassGroup_IdAndActiveTrue(groupId, pageable)
                             .map(this::mapToCategoryResponse);
                 }
             }
+            // Retornar vacío por seguridad si el estudiante no tiene grupo asignado
+            return Page.empty(pageable);
+        } else if ("ADMIN".equalsIgnoreCase(currentUser.getUserType())) {
+            // El admin puede ver todas
+            return categoryRepository.findAll(pageable).map(this::mapToCategoryResponse);
         }
-        return categoryRepository.findByActiveTrue(pageable).map(this::mapToCategoryResponse);
+        
+        // Por defecto (por ejemplo para padres u otros roles), no mostrar categorías globales
+        return Page.empty(pageable);
     }
 
     @Override
@@ -75,6 +83,46 @@ public class PracticeServiceImpl implements PracticeService {
                 .build();
         
         return mapToCategoryResponse(categoryRepository.save(category));
+    }
+
+    @Override
+    @Transactional
+    public PracticeCategoryResponse updateCategory(Long id, PracticeCategoryRequest request) {
+        User currentUser = getCurrentUser();
+        PracticeCategory category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+        
+        if (!category.getTeacher().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("No tienes permiso para editar esta categoría");
+        }
+
+        ClassGroup group = classGroupRepository.findById(request.getGroupId())
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
+
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        category.setClassGroup(group);
+        // active state usually shouldn't be overridden if the request always says active=true, but we update it anyway.
+        category.setActive(request.isActive());
+
+        return mapToCategoryResponse(categoryRepository.save(category));
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long id) {
+        User currentUser = getCurrentUser();
+        PracticeCategory category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+        
+        if (!category.getTeacher().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("No tienes permiso para eliminar esta categoría");
+        }
+
+        // Delete associated exercises first to prevent foreign key constraints errors
+        exerciseRepository.deleteByCategory_Id(id);
+        // Then delete the category
+        categoryRepository.delete(category);
     }
 
     @Override

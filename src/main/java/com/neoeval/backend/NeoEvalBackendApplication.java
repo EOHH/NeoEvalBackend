@@ -13,10 +13,10 @@ import jakarta.annotation.PostConstruct;
 @SpringBootApplication
 public class NeoEvalBackendApplication {
 
-    // 🚀 La solución de forzar UTC con PostConstruct sigue siendo la mejor práctica.
+    // 🚀 Configuración definitiva para la zona horaria de Perú
     @PostConstruct
     void started() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Lima"));
     }
 
     public static void main(String[] args) {

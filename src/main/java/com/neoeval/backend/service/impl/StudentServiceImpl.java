@@ -92,7 +92,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Page<StudentResponse> getAllStudents(Pageable pageable) {
-        return studentRepository.findAll(pageable)
+        return studentRepository.findByActiveTrueAndApprovalStatus("APPROVED", pageable)
                 .map(this::mapToStudentResponse);
     }
 
@@ -107,7 +107,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Page<StudentResponse> searchStudentsByName(String name, Pageable pageable) {
-        Page<Student> students = studentRepository.findByNameContainingIgnoreCase(name, pageable);
+        Page<Student> students = studentRepository.findByNameContainingIgnoreCaseAndActiveTrueAndApprovalStatus(name, "APPROVED", pageable);
         return students.map(this::mapToStudentResponse);
     }
 

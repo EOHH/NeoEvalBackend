@@ -37,4 +37,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Page<Student> findByClassGroups_Id(Long groupId, Pageable pageable);
 
     Page<Student> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    
+    Page<Student> findByActiveTrueAndApprovalStatus(String approvalStatus, Pageable pageable);
+
+    Page<Student> findByNameContainingIgnoreCaseAndActiveTrueAndApprovalStatus(String name, String approvalStatus, Pageable pageable);
 }

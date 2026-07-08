@@ -29,11 +29,24 @@ public class PracticeController {
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<PracticeCategoryResponse> createCategory(
-            @Valid @RequestBody PracticeCategoryRequest request) {
-        return new ResponseEntity<>(practiceService.createCategory(request), HttpStatus.CREATED);
+    public ResponseEntity<PracticeCategoryResponse> createCategory(@Valid @RequestBody PracticeCategoryRequest request) {
+        return ResponseEntity.ok(practiceService.createCategory(request));
     }
 
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<PracticeCategoryResponse> updateCategory(
+            @PathVariable Long id, 
+            @Valid @RequestBody PracticeCategoryRequest request) {
+        return ResponseEntity.ok(practiceService.updateCategory(id, request));
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        practiceService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- Endpoints para Ejercicios ---
     @PostMapping("/exercises")
     public ResponseEntity<PracticeExerciseResponse> createExercise(
             @Valid @RequestBody PracticeExerciseRequest request) {

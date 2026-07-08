@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<StudentResponse> getAllStudents(Pageable pageable) {
-        Page<Student> studentsPage = studentRepository.findAll(pageable);
+        Page<Student> studentsPage = studentRepository.findByActiveTrueAndApprovalStatus("APPROVED", pageable);
         return studentsPage.map(this::mapToStudentResponse);
     }
 

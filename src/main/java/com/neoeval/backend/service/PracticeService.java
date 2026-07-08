@@ -13,6 +13,10 @@ public interface PracticeService {
     
     PracticeCategoryResponse createCategory(PracticeCategoryRequest request);
 
+    PracticeCategoryResponse updateCategory(Long id, PracticeCategoryRequest request);
+
+    void deleteCategory(Long id);
+
     PracticeExerciseResponse createExercise(PracticeExerciseRequest request);
 
     Page<PracticeExerciseResponse> getExercisesByCategoryAndDifficulty(Long categoryId, DifficultyLevel difficultyLevel, Pageable pageable);

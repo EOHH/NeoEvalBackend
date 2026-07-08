@@ -13,4 +13,6 @@ public interface PracticeExerciseRepository extends JpaRepository<PracticeExerci
 
     @EntityGraph(attributePaths = {"category"})
     Page<PracticeExercise> findByCategory_IdAndDifficultyLevel(Long categoryId, DifficultyLevel level, Pageable pageable);
+
+    void deleteByCategory_Id(Long categoryId);
 }

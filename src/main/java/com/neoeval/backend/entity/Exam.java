@@ -2,6 +2,7 @@ package com.neoeval.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.BatchSize;
@@ -23,13 +24,13 @@ public class Exam {
     @Column(name = "exam_type", nullable = false, length = 20)
     private String examType; // EXAM, HOMEWORK, PRACTICE
 
-    // ✅ CORRECCIÓN: Renombrado a 'openingDate' para coincidir con los DTOs
+    // 🚀 Cambiado a LocalDateTime para evitar desfases de zona horaria
     @Column(name = "opening_date")
-    private Instant openingDate; // UTC
+    private LocalDateTime openingDate;
 
-    // ✅ CORRECCIÓN: Renombrado a 'closingDate' para coincidir con los DTOs
+    // 🚀 Cambiado a LocalDateTime para evitar desfases de zona horaria
     @Column(name = "closing_date")
-    private Instant closingDate; // UTC
+    private LocalDateTime closingDate;
 
     @Column(name = "time_limit_minutes")
     private Integer timeLimitMinutes;
@@ -88,12 +89,12 @@ public class Exam {
     public String getExamType() { return examType; }
     public void setExamType(String examType) { this.examType = examType; }
 
-    // ✅ CORRECCIÓN: Renombrados los Getters/Setters
-    public Instant getOpeningDate() { return openingDate; }
-    public void setOpeningDate(Instant openingDate) { this.openingDate = openingDate; }
+    // 🚀 Getters y Setters actualizados a LocalDateTime
+    public LocalDateTime getOpeningDate() { return openingDate; }
+    public void setOpeningDate(LocalDateTime openingDate) { this.openingDate = openingDate; }
 
-    public Instant getClosingDate() { return closingDate; }
-    public void setClosingDate(Instant closingDate) { this.closingDate = closingDate; }
+    public LocalDateTime getClosingDate() { return closingDate; }
+    public void setClosingDate(LocalDateTime closingDate) { this.closingDate = closingDate; }
 
     public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
     public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
