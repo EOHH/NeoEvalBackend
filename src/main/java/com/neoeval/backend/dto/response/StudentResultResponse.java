@@ -1,6 +1,7 @@
 package com.neoeval.backend.dto.response;
 
 import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class StudentResultResponse {
 
@@ -18,7 +19,7 @@ public class StudentResultResponse {
     private Integer totalQuestions;
 
     // Fecha de finalización (Usamos LocalDateTime como en la entidad)
-    private LocalDateTime completedAt;
+    private Instant completedAt;
 
     // ---------------------------
     // 🟢 Getters y Setters
@@ -49,6 +50,6 @@ public class StudentResultResponse {
     public Integer getTotalQuestions() { return totalQuestions; }
     public void setTotalQuestions(Integer totalQuestions) { this.totalQuestions = totalQuestions; }
 
-    public LocalDateTime getCompletedAt() { return completedAt; }
-    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
 }

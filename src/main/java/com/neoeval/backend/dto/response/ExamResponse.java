@@ -1,6 +1,7 @@
 package com.neoeval.backend.dto.response;
 
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public class ExamResponse {
@@ -9,8 +10,8 @@ public class ExamResponse {
     private String description;
     private String examType;
 
-    private LocalDateTime openingDate;
-    private LocalDateTime closingDate;
+    private Instant openingDate;
+    private Instant closingDate;
 
     private Integer timeLimitMinutes;
     private Integer allowedAttempts;
@@ -33,8 +34,8 @@ public class ExamResponse {
     public ExamResponse() {}
 
     // Constructor con todos los campos
-    public ExamResponse(Long id, String title, String description, String examType, LocalDateTime openingDate,
-                        LocalDateTime closingDate, Integer timeLimitMinutes, Integer allowedAttempts,
+    public ExamResponse(Long id, String title, String description, String examType, Instant openingDate,
+                        Instant closingDate, Integer timeLimitMinutes, Integer allowedAttempts,
                         Double averageDifficulty, Long subjectId, String subjectName, ClassGroupResponse classGroup,
                         Long teacherId, String teacherName, Boolean isCompleted,
                         List<QuestionResponse> questions, Integer questionCount) {
@@ -91,19 +92,19 @@ public class ExamResponse {
         this.examType = examType;
     }
 
-    public LocalDateTime getOpeningDate() {
+    public Instant getOpeningDate() {
         return openingDate;
     }
 
-    public void setOpeningDate(LocalDateTime openingDate) {
+    public void setOpeningDate(Instant openingDate) {
         this.openingDate = openingDate;
     }
 
-    public LocalDateTime getClosingDate() {
+    public Instant getClosingDate() {
         return closingDate;
     }
 
-    public void setClosingDate(LocalDateTime closingDate) {
+    public void setClosingDate(Instant closingDate) {
         this.closingDate = closingDate;
     }
 
@@ -195,3 +196,4 @@ public class ExamResponse {
         this.questionCount = questionCount;
     }
 }
+

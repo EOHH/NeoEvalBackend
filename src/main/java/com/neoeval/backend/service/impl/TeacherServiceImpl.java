@@ -161,10 +161,10 @@ public class TeacherServiceImpl implements TeacherService {
         // Conversión de Instant (Entity) a LocalDateTime (DTO)
         // Esto es correcto, ya que Instant tiene atZone()
         if (exam.getOpeningDate() != null) {
-            response.setOpeningDate(exam.getOpeningDate().atZone(zoneId).toLocalDateTime());
+            response.setOpeningDate(exam.getOpeningDate());
         }
         if (exam.getClosingDate() != null) {
-            response.setClosingDate(exam.getClosingDate().atZone(zoneId).toLocalDateTime());
+            response.setClosingDate(exam.getClosingDate());
         }
 
         if (exam.getTimeLimitMinutes() != null) {

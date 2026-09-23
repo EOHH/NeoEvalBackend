@@ -26,11 +26,11 @@ public class Exam {
 
     // 🚀 Cambiado a LocalDateTime para evitar desfases de zona horaria
     @Column(name = "opening_date")
-    private LocalDateTime openingDate;
+    private Instant openingDate;
 
     // 🚀 Cambiado a LocalDateTime para evitar desfases de zona horaria
     @Column(name = "closing_date")
-    private LocalDateTime closingDate;
+    private Instant closingDate;
 
     @Column(name = "time_limit_minutes")
     private Integer timeLimitMinutes;
@@ -90,11 +90,11 @@ public class Exam {
     public void setExamType(String examType) { this.examType = examType; }
 
     // 🚀 Getters y Setters actualizados a LocalDateTime
-    public LocalDateTime getOpeningDate() { return openingDate; }
-    public void setOpeningDate(LocalDateTime openingDate) { this.openingDate = openingDate; }
+    public Instant getOpeningDate() { return openingDate; }
+    public void setOpeningDate(Instant openingDate) { this.openingDate = openingDate; }
 
-    public LocalDateTime getClosingDate() { return closingDate; }
-    public void setClosingDate(LocalDateTime closingDate) { this.closingDate = closingDate; }
+    public Instant getClosingDate() { return closingDate; }
+    public void setClosingDate(Instant closingDate) { this.closingDate = closingDate; }
 
     public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
     public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }

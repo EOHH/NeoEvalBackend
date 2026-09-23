@@ -2,6 +2,7 @@ package com.neoeval.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneOffset;
 
 @Entity
@@ -36,14 +37,14 @@ public class StudentResult {
 
     // ✅ Fecha y hora de finalización (UTC)
     @Column(name = "completed_at", nullable = false)
-    private LocalDateTime completedAt;
+    private Instant completedAt;
 
     // ---------------------------
     // 🔧 Constructores
     // ---------------------------
     public StudentResult() {
         // Forzamos a UTC para que se guarde sin desplazamiento
-        this.completedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.completedAt = Instant.now();
     }
 
     public StudentResult(Student student, Exam exam, Double score, Double percentage,
@@ -81,10 +82,12 @@ public class StudentResult {
     public Integer getCorrectAnswers() { return correctAnswers; }
     public void setCorrectAnswers(Integer correctAnswers) { this.correctAnswers = correctAnswers; }
 
-    public LocalDateTime getCompletedAt() { return completedAt; }
+    public Instant getCompletedAt() { return completedAt; }
 
-    public void setCompletedAt(LocalDateTime completedAt) {
+    public void setCompletedAt(Instant completedAt) {
         // Si viene nulo o sin zona, forzamos UTC
-        this.completedAt = completedAt != null ? completedAt : LocalDateTime.now(ZoneOffset.UTC);
+        this.completedAt = completedAt != null ? completedAt : Instant.now();
     }
 }
+
+

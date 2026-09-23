@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public class CreateExamRequest {
@@ -26,8 +27,8 @@ public class CreateExamRequest {
     private Long teacherId;
 
     // 🚀 RECOMENDADO: Usamos LocalDateTime para fechas/horas de eventos globales
-    private LocalDateTime openingDate;
-    private LocalDateTime closingDate;
+    private Instant openingDate;
+    private Instant closingDate;
 
     private Integer timeLimitMinutes;
     private Integer allowedAttempts;
@@ -50,10 +51,10 @@ public class CreateExamRequest {
     public void setTeacherId(Long teacherId) { this.teacherId = teacherId; }
 
     // 🚀 Getters y Setters actualizados a LocalDateTime
-    public LocalDateTime getOpeningDate() { return openingDate; }
-    public void setOpeningDate(LocalDateTime openingDate) { this.openingDate = openingDate; }
-    public LocalDateTime getClosingDate() { return closingDate; }
-    public void setClosingDate(LocalDateTime closingDate) { this.closingDate = closingDate; }
+    public Instant getOpeningDate() { return openingDate; }
+    public void setOpeningDate(Instant openingDate) { this.openingDate = openingDate; }
+    public Instant getClosingDate() { return closingDate; }
+    public void setClosingDate(Instant closingDate) { this.closingDate = closingDate; }
 
     public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
     public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
